@@ -5,31 +5,86 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="エンジニア1年生向け。git とターミナルの基本コマンドを、1ページ1コマンドの小さなステップでやさしく学べる学習サイトです。">
 <title>TermLearn — git &amp; ターミナル 学習チュートリアル</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=20260626c">
 </head>
 <body>
 
-<!-- ===== App header（共通。浮遊 pill。実在の遷移先のみ：ホーム / 復習リスト） ===== -->
-<header class="appbar">
-  <a class="logo" href="#/" aria-label="TermLearn ホームへ">
-    <span class="logo__mark" aria-hidden="true"></span>
-    <span>TermLearn</span>
-  </a>
-  <nav class="appnav" aria-label="メイン">
-    <a id="navHome" href="#/"><span aria-hidden="true" data-icon="home"></span><span>ホーム</span></a>
-    <a id="navReview" href="#/review">
-      <span aria-hidden="true" data-icon="bookmark"></span>
-      <span>復習リスト<span id="reviewBadge" style="display:none;"> (<span id="reviewCount" class="appnav__count">0</span>)</span></span>
-    </a>
-  </nav>
-</header>
+<!-- ===========================================================================
+     背景の装飾レイヤー（雲＋キラキラ）。fixed・低不透明度・装飾なので aria-hidden。
+     コンテンツの可読性は死守（カードは白＝AA）。reduced-motion でアニメ停止。
+     SVG は icons.js の Icon('cloud'/'spark'/'star4') を JS で流し込む（data-icon）。
+     =========================================================================== -->
+<div class="bg-deco" aria-hidden="true">
+  <span class="bg-deco__cloud bg-deco__cloud--1" data-icon="cloud"></span>
+  <span class="bg-deco__cloud bg-deco__cloud--2" data-icon="cloud"></span>
+  <span class="bg-deco__cloud bg-deco__cloud--3" data-icon="cloud"></span>
+  <span class="bg-deco__spark bg-deco__spark--1" data-icon="spark"></span>
+  <span class="bg-deco__spark bg-deco__spark--2" data-icon="star4"></span>
+  <span class="bg-deco__spark bg-deco__spark--3" data-icon="spark"></span>
+  <span class="bg-deco__spark bg-deco__spark--4" data-icon="star4"></span>
+  <span class="bg-deco__spark bg-deco__spark--5" data-icon="spark"></span>
+</div>
 
-<!-- ===== アプリ描画先（ルーターがここに各画面を流し込む） ===== -->
-<main id="app" class="page-wrap" aria-live="polite">
-  <noscript>
-    <p style="padding:24px;">このサイトは JavaScript で動作します。お使いのブラウザで JavaScript を有効にしてください。</p>
-  </noscript>
-</main>
+<!-- ===========================================================================
+     アプリの骨格 = 左サイドバー + 右メイン の2カラム（参考画像のダッシュボード構成）。
+     ～960px ではサイドバーを上部のコンパクトバーに畳む（CSS のみ）。
+     =========================================================================== -->
+<div class="app-shell">
+
+  <!-- ===== 左サイドバー（縦メニュー）。実在の遷移先＝ホーム/復習リストのみ機能。
+            ロードマップ/ブックマーク/設定は disabled の「近日」項目（押せないことを明示）。 ===== -->
+  <aside class="sidebar" aria-label="サイドバー">
+    <a class="sidebar__logo logo" href="#/" aria-label="TermLearn ホームへ">
+      <span class="logo__mark" aria-hidden="true"></span>
+      <span class="logo__name">TermLearn</span>
+    </a>
+
+    <nav class="sidenav" aria-label="メインメニュー">
+      <a id="navHome" class="sidenav__item" href="#/">
+        <span class="sidenav__icon" aria-hidden="true" data-icon="home"></span>
+        <span class="sidenav__label">ホーム</span>
+      </a>
+      <a id="navReview" class="sidenav__item" href="#/review">
+        <span class="sidenav__icon" aria-hidden="true" data-icon="bookmark"></span>
+        <span class="sidenav__label">復習リスト</span>
+        <span id="reviewBadge" class="sidenav__count" style="display:none;"><span id="reviewCount">0</span></span>
+      </a>
+
+      <!-- 仮メニュー（参考画像の見た目に寄せる装飾）。機能しないので disabled＝押せない。
+           「ダミーの押せるのに何も起きないリンク」は不可なので、必ず aria-disabled + tabindex=-1。 -->
+      <span class="sidenav__item is-soon" aria-disabled="true" role="link" tabindex="-1">
+        <span class="sidenav__icon" aria-hidden="true" data-icon="map"></span>
+        <span class="sidenav__label">学習ロードマップ</span>
+        <span class="sidenav__soon">近日</span>
+      </span>
+      <span class="sidenav__item is-soon" aria-disabled="true" role="link" tabindex="-1">
+        <span class="sidenav__icon" aria-hidden="true" data-icon="bookmark"></span>
+        <span class="sidenav__label">ブックマーク</span>
+        <span class="sidenav__soon">近日</span>
+      </span>
+      <span class="sidenav__item is-soon" aria-disabled="true" role="link" tabindex="-1">
+        <span class="sidenav__icon" aria-hidden="true" data-icon="settings"></span>
+        <span class="sidenav__label">設定</span>
+        <span class="sidenav__soon">近日</span>
+      </span>
+    </nav>
+
+    <!-- 下部のやわらかい雲イラスト（装飾）。PC のみ表示。 -->
+    <div class="sidebar__cloud" aria-hidden="true">
+      <span class="sidebar__cloud-spark" data-icon="spark"></span>
+      <span class="sidebar__cloud-img" data-icon="cloud"></span>
+      <span class="sidebar__cloud-img sidebar__cloud-img--2" data-icon="cloud"></span>
+    </div>
+  </aside>
+
+  <!-- ===== メイン（ルーターがここに各画面を流し込む） ===== -->
+  <main id="app" class="page-wrap" aria-live="polite">
+    <noscript>
+      <p style="padding:24px;">このサイトは JavaScript で動作します。お使いのブラウザで JavaScript を有効にしてください。</p>
+    </noscript>
+  </main>
+
+</div><!-- /.app-shell -->
 
 <footer class="appfoot">
   <span class="appfoot__logo" aria-hidden="true" data-icon="github"></span>
@@ -43,25 +98,25 @@
     → file:// で開いたときに CORS で読めなくなるため。
   各ファイルは window に登録して連携する。
 -->
-<script src="js/glossary.js"></script>
-<script src="js/store.js"></script>
-<script src="js/icons.js"></script>
-<script src="js/render.js"></script>
+<script src="js/glossary.js?v=20260626c"></script>
+<script src="js/store.js?v=20260626c"></script>
+<script src="js/icons.js?v=20260626c"></script>
+<script src="js/render.js?v=20260626c"></script>
 <!-- コンテンツ（教材を増やすときはここに1行追加するだけ） -->
 <script>window.COURSES = window.COURSES || [];</script>
-<script src="content/terminal.js"></script>
-<script src="content/git.js"></script>
-<script src="content/coming-soon.js"></script>
+<script src="content/terminal.js?v=20260626c"></script>
+<script src="content/git.js?v=20260626c"></script>
+<script src="content/coming-soon.js?v=20260626c"></script>
 <!-- ルーター（最後。COURSES が出そろってから起動） -->
-<script src="js/router.js"></script>
+<script src="js/router.js?v=20260626c"></script>
 
-<!-- ヘッダー/フッターの装飾アイコン・nav 現在地は、icons.js / store.js が出そろってから整える。
+<!-- サイドバー/フッター/背景装飾の SVG・nav 現在地は、icons.js / store.js が出そろってから整える。
      復習件数(reviewBadge/reviewCount)は router.js が route 毎に updateReviewBadge() で最新化する。 -->
 <script>
   (function () {
     function fillIcons() {
       if (!window.Icon) return;
-      // data-icon="名前" の空スパンに SVG を流し込む（装飾＝aria-hidden は親に付与済み）。
+      // data-icon="名前" の空スロットに SVG を流し込む（装飾＝aria-hidden は親に付与済み）。
       var slots = document.querySelectorAll('[data-icon]');
       for (var i = 0; i < slots.length; i++) {
         var el = slots[i];
