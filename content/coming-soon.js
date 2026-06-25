@@ -10,7 +10,7 @@
   window.COURSES.push({
     id: 'python',
     title: 'Python',
-    emoji: '🐍',
+    icon: 'python', // 教材アイコン（Python 公式ロゴ）。router 側で Icon(course.icon)。
     description: 'プログラミング言語の入門。準備中です。お楽しみに！',
     comingSoon: true,
     chapters: [] // 準備中なので中身は空でOK

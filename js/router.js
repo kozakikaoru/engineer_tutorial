@@ -15,6 +15,20 @@
   var Store = window.Store;
   var COURSES = window.COURSES || [];
 
+  // アイコン（icons.js が先に読み込まれている前提）。未ロードでも落ちない空文字フォールバック。
+  function Icon(name, opts) { return window.Icon ? window.Icon(name, opts) : ''; }
+
+  /* ---------- 配列ユーティリティ ---------- */
+  // Fisher–Yates シャッフル（元配列は壊さずコピーを返す）。Math.random で十分（クライアント実行）。
+  function shuffled(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
   var rootEl; // #app
 
   /* ---------- データ参照ヘルパ ---------- */
@@ -69,7 +83,7 @@
       if (course.comingSoon) {
         return '' +
           '<article class="course-card course-card--soon" aria-disabled="true">' +
-            '<div class="course-card__emoji" aria-hidden="true">' + R.esc(course.emoji) + '</div>' +
+            '<div class="course-card__emoji" aria-hidden="true">' + Icon(course.icon, { size: 30 }) + '</div>' +
             '<h2 class="course-card__title">' + R.esc(course.title) + '</h2>' +
             '<p class="course-card__desc">' + R.esc(course.description) + '</p>' +
             '<div class="course-card__foot">' +
@@ -82,20 +96,20 @@
       var started = prog.done > 0;
       var done = prog.done === prog.total && prog.total > 0;
       var badge = done
-        ? '<span class="badge badge--done"><span aria-hidden="true">✓</span> 全ページ読了</span>'
+        ? '<span class="badge badge--done">' + Icon('check') + '全ページ読了</span>'
         : (started
             ? '<span class="badge badge--new">学習中</span>'
             : '<span class="badge badge--new">はじめる前</span>');
       var btnLabel = started ? '続きから' : 'はじめる';
       return '' +
         '<article class="course-card">' +
-          '<div class="course-card__emoji" aria-hidden="true">' + R.esc(course.emoji) + '</div>' +
+          '<div class="course-card__emoji" aria-hidden="true">' + Icon(course.icon, { size: 30 }) + '</div>' +
           '<h2 class="course-card__title">' + R.esc(course.title) + '</h2>' +
           '<p class="course-card__desc">' + R.inline(course.description) + '</p>' +
           R.progress(prog.done, prog.total) +
           '<div class="course-card__foot">' +
             badge +
-            '<a class="btn btn--primary btn--sm" href="#/course/' + course.id + '">' + btnLabel + ' <span aria-hidden="true">→</span></a>' +
+            '<a class="btn btn--primary btn--sm" href="#/course/' + course.id + '">' + btnLabel + ' ' + Icon('arrow-right') + '</a>' +
           '</div>' +
         '</article>';
     }).join('');
@@ -103,7 +117,7 @@
     setHTML(
       '<section class="view screen">' +
         '<div class="lead">' +
-          '<h1>何から学びますか？ 🚀</h1>' +
+          '<h1>何から学びますか？</h1>' +
           '<p>エンジニアの第一歩、ターミナルと Git。<br>1ページ1コマンドの小さなステップで、怖がらずに進めます。</p>' +
         '</div>' +
         '<div class="course-grid">' + cards + '</div>' +
@@ -127,14 +141,14 @@
 
       var side;
       if (allRead) {
-        side = '<span class="badge badge--achievement"><span aria-hidden="true">🏅</span> クリア！</span>' +
+        side = '<span class="badge badge--achievement">' + Icon('award') + 'クリア！</span>' +
                '<span class="progress__label" style="color:var(--c-success);">' + p.done + '/' + p.total + ' 読了</span>';
       } else if (p.done > 0) {
         side = '<span class="progress__label">' + p.done + '/' + p.total + ' 読了</span>' +
-               '<span class="chapter-card__arrow" aria-hidden="true">→</span>';
+               '<span class="chapter-card__arrow" aria-hidden="true">' + Icon('arrow-right') + '</span>';
       } else {
         side = '<span class="progress__label" style="color:var(--c-text-faint);">未読</span>' +
-               '<span class="chapter-card__arrow" aria-hidden="true">→</span>';
+               '<span class="chapter-card__arrow" aria-hidden="true">' + Icon('arrow-right') + '</span>';
       }
 
       var firstPageHref = '#/page/' + course.id + '/' + ch.id + '/' + ch.pages[0].id;
@@ -153,10 +167,10 @@
       if (ch.quiz && ch.quiz.length) {
         if (allRead) {
           quizLink = '<a class="btn btn--ghost btn--sm chapter-quiz-link" href="#/quiz/' + course.id + '/' + ch.id + '">' +
-            '<span aria-hidden="true">📝</span> 章' + (idx + 1) + ' テストを受ける（全' + ch.quiz.length + '問）</a>';
+            Icon('doc') + ' 章' + (idx + 1) + ' テストを受ける（全' + ch.quiz.length + '問）</a>';
         } else {
           quizLink = '<button class="btn btn--ghost btn--sm chapter-quiz-link" disabled aria-disabled="true">' +
-            '<span aria-hidden="true">🔒</span> テストは全ページ読了で受けられます</button>';
+            Icon('lock', { title: 'ロック中' }) + ' テストは全ページ読了で受けられます</button>';
         }
       }
       return card + quizLink;
@@ -166,10 +180,10 @@
       '<section class="view screen">' +
         breadcrumb([
           { label: '教材', href: '#/' },
-          { label: course.emoji + ' ' + course.title }
+          { label: course.title }
         ]) +
         '<div class="section-head">' +
-          '<h1 class="section-head__title">' + R.esc(course.emoji + ' ' + course.title) + '</h1>' +
+          '<h1 class="section-head__title with-icon">' + Icon(course.icon, { size: 24 }) + R.esc(course.title) + '</h1>' +
           R.progress(cprog.done, cprog.total, { label: cprog.done + '/' + cprog.total + ' 読了' }) +
         '</div>' +
         '<div class="chapter-list">' + chapters + '</div>' +
@@ -194,7 +208,7 @@
     var quizItem = '';
     if (chapter.quiz && chapter.quiz.length) {
       quizItem = '<a class="chapter-nav__link chapter-nav__quiz" href="#/quiz/' + course.id + '/' + chapter.id + '">' +
-        '<span aria-hidden="true">📝</span> 章テストを受ける</a>';
+        Icon('doc') + ' 章テストを受ける</a>';
     }
     return '<ul class="chapter-nav__list">' + items + '</ul>' + quizItem;
   }
@@ -247,9 +261,9 @@
       : '次へ';
 
     var prevBtn = prevHref
-      ? '<a class="btn btn--ghost" href="' + prevHref + '"><span aria-hidden="true">←</span> 前へ</a>'
-      : '<a class="btn btn--ghost" href="#/course/' + course.id + '"><span aria-hidden="true">←</span> 章一覧</a>';
-    var nextBtn = '<a class="btn btn--primary" href="' + nextHref + '">' + nextLabel + ' <span aria-hidden="true">→</span></a>';
+      ? '<a class="btn btn--ghost" href="' + prevHref + '">' + Icon('arrow-left') + ' 前へ</a>'
+      : '<a class="btn btn--ghost" href="#/course/' + course.id + '">' + Icon('arrow-left') + ' 章一覧</a>';
+    var nextBtn = '<a class="btn btn--primary" href="' + nextHref + '">' + nextLabel + ' ' + Icon('arrow-right') + '</a>';
 
     var readBtn =
       '<button class="read-toggle' + (read ? ' is-done' : '') + '" type="button" aria-pressed="' + (read ? 'true' : 'false') + '"' +
@@ -262,14 +276,14 @@
     setHTML(
       '<section class="view screen" style="padding-top:var(--space-5);">' +
         breadcrumb([
-          { label: course.emoji + ' ' + course.title, href: '#/course/' + course.id },
+          { label: course.title, href: '#/course/' + course.id },
           { label: '章' + chapterNum + ' ' + chapter.title, href: '#/page/' + course.id + '/' + chapter.id + '/' + chapter.pages[0].id },
           { label: page.navTitle || page.title }
         ]) +
 
         // モバイル用 章ナビ（折りたたみ）
         '<details class="chapter-nav__mobile">' +
-          '<summary><span aria-hidden="true">📑</span> 章' + chapterNum + ' のページ一覧（' + prog.done + '/' + prog.total + ' 読了）</summary>' +
+          '<summary>' + Icon('list') + ' 章' + chapterNum + ' のページ一覧（' + prog.done + '/' + prog.total + ' 読了）</summary>' +
           navList +
         '</details>' +
 
@@ -301,8 +315,8 @@
         toggle.setAttribute('aria-pressed', String(now));
         var mark = toggle.querySelector('.check');
         var label = toggle.querySelector('.read-toggle__label');
-        if (now) { mark.className = 'check check--done'; mark.textContent = '✓'; if (label) label.textContent = '読んだ'; }
-        else { mark.className = 'check check--todo'; mark.textContent = ''; if (label) label.textContent = '読んだことにする'; }
+        if (now) { mark.className = 'check check--done'; mark.innerHTML = Icon('check'); if (label) label.textContent = '読んだ'; }
+        else { mark.className = 'check check--todo'; mark.innerHTML = ''; if (label) label.textContent = '読んだことにする'; }
         // 章ナビのチェックも更新（PC・モバイル両方）
         updateNavChecks(course, chapter, page.id, now);
       });
@@ -315,8 +329,8 @@
     rootEl.querySelectorAll('.chapter-nav__link[href="' + href + '"], .chapter-nav__mobile a[href="' + href + '"]').forEach(function (a) {
       var check = a.querySelector('.check');
       if (!check) return;
-      if (read) { check.className = 'check check--done'; check.textContent = '✓'; }
-      else { check.className = 'check check--todo'; check.textContent = ''; }
+      if (read) { check.className = 'check check--done'; check.innerHTML = Icon('check'); }
+      else { check.className = 'check check--todo'; check.innerHTML = ''; }
     });
   }
 
@@ -333,19 +347,39 @@
       return '';
     })();
 
-    var quiz = chapter.quiz;
-    var state = { i: 0, correct: 0, answered: false };
+    // 章テストの「1回ぶん」を組み立てる。
+    //  - 設問順を Fisher–Yates でシャッフル（元データ chapter.quiz は破壊しない）。
+    //  - 各設問の選択肢順もシャッフルし、正解は「インデックス」ではなく
+    //    「正解の選択肢の値」を基準に追従させて answer を再マップする。
+    function buildQuiz() {
+      return shuffled(chapter.quiz).map(function (src) {
+        var correctValue = src.choices[src.answer];     // 正解の“値”を覚える
+        var choices = shuffled(src.choices);            // 選択肢をシャッフル（コピー）
+        return {
+          q: src.q,
+          explain: src.explain,
+          topic: src.topic,
+          pageId: src.pageId,
+          choices: choices,
+          answer: choices.indexOf(correctValue)         // シャッフル後の正解 index に再マップ
+        };
+      });
+    }
+
+    // state.quiz が「今回出題するシャッフル済みの問題列」。retry でも作り直す。
+    var state = { quiz: buildQuiz(), i: 0, correct: 0, answered: false };
 
     function shell(inner) {
       return '<section class="view screen">' +
         breadcrumb([
-          { label: course.emoji + ' ' + course.title, href: '#/course/' + course.id },
+          { label: course.title, href: '#/course/' + course.id },
           { label: chapter.title, href: '#/page/' + course.id + '/' + chapter.id + '/' + chapter.pages[0].id },
           { label: '章' + chapterNum + ' テスト' }
         ]) + inner + '</section>';
     }
 
     function renderQuestion() {
+      var quiz = state.quiz;
       var q = quiz[state.i];
       var choicesHtml = q.choices.map(function (c, ci) {
         var letter = String.fromCharCode(65 + ci); // A,B,C...
@@ -367,7 +401,7 @@
           '<div class="quiz__feedback" id="quizFeedback" aria-live="polite"></div>' +
           '<div class="page-foot" style="border:none;padding-top:var(--space-5);margin-top:var(--space-4);justify-content:flex-end;">' +
             '<button class="btn btn--primary" id="quizNext" aria-disabled="true" disabled>' +
-              (state.i === quiz.length - 1 ? '結果を見る' : '次の問題') + ' <span aria-hidden="true">→</span></button>' +
+              (state.i === quiz.length - 1 ? '結果を見る' : '次の問題') + ' ' + Icon('arrow-right') + '</button>' +
           '</div>' +
         '</div>'
       ));
@@ -386,21 +420,22 @@
           if (state.answered) return;
           state.answered = true;
           var picked = Number(choice.getAttribute('data-i'));
-          var isCorrect = picked === q.answer;
+          var isCorrect = picked === q.answer; // q.answer はシャッフル後に再マップ済み
           if (isCorrect) state.correct++;
 
           choices.forEach(function (c, ci) {
             c.disabled = true;
             var result = c.querySelector('.choice__result');
-            if (ci === q.answer) { c.classList.add('is-correct'); result.textContent = '✓'; }
-            if (c === choice && !isCorrect) { c.classList.add('is-wrong'); result.textContent = '✕'; }
+            // 正解の選択肢は常に check でハイライト、選んで外したものに close。色だけに頼らずアイコン併記。
+            if (ci === q.answer) { c.classList.add('is-correct'); result.innerHTML = Icon('check'); }
+            if (c === choice && !isCorrect) { c.classList.add('is-wrong'); result.innerHTML = Icon('close'); }
           });
 
           if (isCorrect) {
             feedback.className = 'quiz__feedback is-correct';
-            feedback.innerHTML = '<strong>正解！ 🎉</strong>' + R.inline(q.explain || '');
+            feedback.innerHTML = '<strong>正解！</strong>' + R.inline(q.explain || '');
           } else {
-            // 間違えたトピックを復習リストへ
+            // 間違えたトピックを復習リストへ（topic/pageId はシャッフル後も設問に紐づくので正しい）
             Store.addReview({
               courseId: course.id,
               chapterId: chapter.id,
@@ -418,22 +453,23 @@
       });
 
       next.addEventListener('click', function () {
-        if (state.i < quiz.length - 1) { state.i++; renderQuestion(); }
+        if (state.i < state.quiz.length - 1) { state.i++; renderQuestion(); }
         else { renderResult(); }
       });
     }
 
     function renderResult() {
-      var total = quiz.length;
+      var total = state.quiz.length;
       var score = state.correct;
       var perfect = score === total;
       var good = score >= Math.ceil(total * 0.7);
-      var emoji = perfect ? '🏆' : (good ? '🎉' : '💪');
+      // 紙吹雪 emoji は廃止（§8）。満点=trophy、それ以外は上品に sparkles で。
+      var resultIcon = perfect ? Icon('trophy') : Icon('sparkles');
       var msg = perfect ? 'パーフェクト！この章はばっちりです。'
         : (good ? 'よくできました！あと少しで完璧です。'
                 : '間違えたところは復習リストにまとめました。もう一度読んで再チャレンジしましょう。');
       var achievement = perfect
-        ? '<div style="margin-bottom:var(--space-4);"><span class="badge badge--achievement"><span aria-hidden="true">🏅</span> 章' + chapterNum + ' 全問正解！</span></div>'
+        ? '<div style="margin-bottom:var(--space-4);"><span class="badge badge--achievement">' + Icon('award') + '章' + chapterNum + ' 全問正解！</span></div>'
         : '';
 
       var reviewCount = Store.getReviews().length;
@@ -443,21 +479,22 @@
 
       setHTML(shell(
         '<div class="quiz-result">' +
-          '<div class="quiz-result__emoji" aria-hidden="true">' + emoji + '</div>' +
+          '<div class="quiz-result__emoji" aria-hidden="true">' + resultIcon + '</div>' +
           achievement +
           '<div class="quiz-result__score">正解 <b>' + score + '</b> / ' + total + '</div>' +
           '<p class="quiz-result__msg">' + msg + '</p>' +
           '<div class="quiz-result__actions">' +
             '<button class="btn btn--ghost" type="button" id="quizRetry">もう一度挑戦</button>' +
             reviewBtn +
-            '<a class="btn btn--primary" href="#/course/' + course.id + '">章一覧へ <span aria-hidden="true">→</span></a>' +
+            '<a class="btn btn--primary" href="#/course/' + course.id + '">章一覧へ ' + Icon('arrow-right') + '</a>' +
           '</div>' +
         '</div>'
       ));
 
       var retry = rootEl.querySelector('#quizRetry');
       if (retry) retry.addEventListener('click', function () {
-        state = { i: 0, correct: 0, answered: false };
+        // 再挑戦のたびに出題順・選択肢順を新しくシャッフルする
+        state = { quiz: buildQuiz(), i: 0, correct: 0, answered: false };
         renderQuestion();
       });
     }
@@ -475,7 +512,7 @@
     if (!reviews.length) {
       body =
         '<div class="review-empty">' +
-          '<div class="review-empty__emoji" aria-hidden="true">🎉</div>' +
+          '<div class="review-empty__emoji" aria-hidden="true">' + Icon('sparkles') + '</div>' +
           '<p style="font-weight:700;color:var(--c-text);margin-top:var(--space-2);">復習リストは空っぽです！</p>' +
           '<p>苦手はぜんぶ克服しました。この調子でどんどん進みましょう。</p>' +
         '</div>';
@@ -484,7 +521,8 @@
         var course = getCourse(r.courseId);
         var chapter = course ? getChapter(course, r.chapterId) : null;
         var page = (course && chapter && r.pageId) ? getPage(chapter, r.pageId) : null;
-        var icon = course ? course.emoji : '📌';
+        // 教材アイコン（ロゴ）。教材が見つからなければ既定の bookmark。
+        var iconName = (course && course.icon) ? course.icon : 'bookmark';
         var chapterNum = '';
         if (course && chapter) {
           for (var i = 0; i < course.chapters.length; i++) if (course.chapters[i].id === chapter.id) chapterNum = (i + 1);
@@ -498,13 +536,13 @@
 
         return '' +
           '<div class="review-card">' +
-            '<span class="review-card__icon" aria-hidden="true">' + R.esc(icon) + '</span>' +
+            '<span class="review-card__icon" aria-hidden="true">' + Icon(iconName) + '</span>' +
             '<div class="review-card__body">' +
-              '<span class="review-card__tag"><span aria-hidden="true">●</span> 要復習</span>' +
+              '<span class="review-card__tag">' + Icon('flag') + '要復習</span>' +
               '<div class="review-card__topic">' + R.esc(r.topic) + '</div>' +
               '<div class="review-card__src">' + R.esc(src) + '</div>' +
             '</div>' +
-            '<a class="btn btn--ghost btn--sm" href="' + href + '">もう一度読む <span aria-hidden="true">→</span></a>' +
+            '<a class="btn btn--ghost btn--sm" href="' + href + '">もう一度読む ' + Icon('arrow-right') + '</a>' +
           '</div>';
       }).join('');
       body = '<div class="review-list">' + cards + '</div>';
@@ -533,7 +571,7 @@
     setHTML(
       '<section class="view screen">' +
         '<div class="review-empty">' +
-          '<div class="review-empty__emoji" aria-hidden="true">🤔</div>' +
+          '<div class="review-empty__emoji" aria-hidden="true">' + Icon('compass') + '</div>' +
           '<p style="font-weight:700;color:var(--c-text);margin-top:var(--space-2);">ページが見つかりませんでした</p>' +
           '<p>URL が変わったか、まだ準備中のページかもしれません。</p>' +
           '<p style="margin-top:var(--space-4);"><a class="btn btn--primary" href="#/">教材選択へ戻る</a></p>' +

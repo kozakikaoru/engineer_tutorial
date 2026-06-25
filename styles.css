@@ -4,41 +4,49 @@
    変数・クラスは prototype と 1:1。
    ========================================================================= */
 :root {
-  /* --- Brand / Accent（ピンク基調・ポップ） --- */
-  --c-brand:        #D81B6B;  /* ローズピンク。CTA・進捗・アクティブ（白文字4.9:1 AA OK） */
-  --c-brand-strong: #BE185D;  /* ホバー/押下・テキストリンク */
-  --c-brand-soft:   #FFE3F0;  /* 淡いピンク面（チップ地・選択ナビ・バッジ地） */
-  --c-brand-bright: #FF5FA2;  /* グラデ・装飾用の明るいピンク */
-  --c-accent:       #7C3AED;  /* 差し色バイオレット（達成・ハイライト要所のみ） */
-  --c-accent-soft:  #F1E6FF;
+  /* --- Brand / Accent（パステルピンク × ラベンダー。上品・やわらか） ---
+     CTA問題の解決方針:
+       純パステルピンク地に白文字は AA を満たせない（白 on #E... は ~3:1）。
+       そこで「面（背景・チップ・選択ナビ）はパステル、押せるCTAだけ少し濃いローズ」に役割分担する。
+       --c-brand 系（押せる色 / 文字色）は AA を満たす濃度に保ち、
+       --c-bg / --c-*-soft（地）はパステルで軽やかに、というコントラスト設計。
+     全組み合わせは AA 実測済み（contrast checker でログ確認、本文≥4.5:1 / ボタン文字≥4.5:1）。 */
+  --c-brand:        #B54579;  /* CTA・進捗・アクティブのローズ。白文字 5.13:1 ✅AA */
+  --c-brand-strong: #A83C6E;  /* ホバー/押下・テキストリンク・チップ文字。白文字 5.94:1 / 白地に文字 5.94:1 ✅AA */
+  --c-brand-soft:   #FCE4EF;  /* パステルピンクの面（チップ地・選択ナビ・バッジ地）。brand-strong文字 4.94:1 ✅AA */
+  --c-brand-bright: #BE4D85;  /* 主ボタンのグラデ明側ストップ。白文字 4.58:1 ✅AA（グラデ全域で白がAAを満たす濃さに留める） */
+  --c-accent:       #6D45C9;  /* 差し色ラベンダー。白地に文字 6.28:1 ✅AA（達成・要所のみ） */
+  --c-accent-strong:#5B36B0;  /* ラベンダー濃。accent-soft地に文字 6.85:1 ✅AA */
+  --c-accent-soft:  #F0E9FF;  /* パステルラベンダーの面（達成バッジ地など） */
 
-  /* --- Semantic（意味の色は据え置きで明快に） --- */
-  --c-success:      #1F9D6B;
-  --c-success-soft: #E3F6EE;
-  --c-danger:       #E5484D;
-  --c-danger-soft:  #FDECEC;
-  --c-warning:      #E0A106;
-  --c-warning-soft: #FCF3DC;
-  --c-info:         #2A7FD4;
-  --c-info-soft:    #E5F0FB;
+  /* --- Semantic（パステル地でも文字側はAAを満たす濃度に調整） --- */
+  --c-success:      #0F7D52;  /* success-soft地に文字 4.59:1 / 白文字 5.15:1 ✅AA */
+  --c-success-soft: #E4F6EE;
+  --c-danger:       #C42F37;  /* danger-soft地に文字 4.76:1 / 白文字 5.51:1 ✅AA */
+  --c-danger-soft:  #FCEAEC;
+  --c-warning:      #B8860B;  /* 左バー等の装飾アクセント（地・線用） */
+  --c-warning-dark: #8A5A00;  /* 警告コールアウトの見出し文字。warning-soft地 5.27:1 ✅AA */
+  --c-warning-soft: #FBF1D8;
+  --c-info:         #2A6BAC;  /* info-soft地に文字 4.85:1 ✅AA */
+  --c-info-soft:    #E8F1FB;
 
-  /* --- Neutral（ほんのりピンクみで白っぽさを消す） --- */
-  --c-bg:           #FFF0F6;
+  /* --- Neutral（ほんのりピンクみのパステル地・上品な文字） --- */
+  --c-bg:           #FFF5F9;  /* ページ地（やわらかいパステルピンク。白っぽくなりすぎない） */
   --c-surface:      #FFFFFF;
-  --c-surface-2:    #FCE4EF;
-  --c-text:         #2B1622;
-  --c-text-muted:   #8A6173;
-  --c-text-faint:   #BE9CAB;
-  --c-border:       #F7D3E4;
-  --c-border-strong:#EFB8D1;
+  --c-surface-2:    #FBEAF2;  /* 一段沈めた面（無効ボタン地・インラインコード地・スケルトン） */
+  --c-text:         #3A2A38;  /* 本文（プラム寄りのダーク）。白地 13.4:1 ✅AAA */
+  --c-text-muted:   #7A6472;  /* 補助テキスト。白地 5.39:1 ✅AA */
+  --c-text-faint:   #9A7F92;  /* 弱い注釈・装飾アイコン。白地 3.61:1（装飾/大サイズ用） */
+  --c-border:       #F6D9E7;  /* 標準の境界線（パステル） */
+  --c-border-strong:#ECBBD3;  /* ホバー/強調境界 */
 
-  /* --- Terminal（主役の濃色。プロンプトをピンクにして世界観を統一） --- */
-  --c-term-bg:      #241723;
-  --c-term-bar:     #38253A;
-  --c-term-text:    #F4E9EF;
-  --c-term-prompt:  #FF74B1;
-  --c-term-comment: #9E8290;
-  --c-term-accent:  #4ADE9B;
+  /* --- Terminal（主役の濃色は維持。プロンプトはパステルローズに調和） --- */
+  --c-term-bg:      #241526;  /* プラム寄りの濃色（真っ黒より柔らかい） */
+  --c-term-bar:     #37223A;
+  --c-term-text:    #F2E9EF;  /* 14.6:1 ✅AAA */
+  --c-term-prompt:  #F49ECB;  /* パステルローズのプロンプト。濃地に 8.76:1 ✅AA */
+  --c-term-comment: #A892A0;  /* 出力/コメント行。6.02:1 ✅AA */
+  --c-term-accent:  #5FE3A8;  /* 実行結果の成功表示。10.77:1 ✅AA */
 
   /* --- Typography --- */
   --font-sans: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
@@ -60,11 +68,11 @@
   /* --- Radius --- */
   --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px; --radius-pill: 999px;
 
-  /* --- Shadow --- */
-  --shadow-sm: 0 1px 2px rgba(150,25,85,.06);
-  --shadow-md: 0 6px 18px rgba(150,25,85,.10);
-  --shadow-lg: 0 14px 34px rgba(150,25,85,.16);
-  --shadow-brand: 0 8px 22px rgba(227,25,123,.34);
+  /* --- Shadow（パステルに馴染むやわらかいプラム影） --- */
+  --shadow-sm: 0 1px 2px rgba(120,40,80,.06);
+  --shadow-md: 0 6px 18px rgba(120,40,80,.09);
+  --shadow-lg: 0 14px 34px rgba(120,40,80,.14);
+  --shadow-brand: 0 8px 20px rgba(181,69,121,.30);
 
   /* --- Motion --- */
   --ease: cubic-bezier(.22,1,.36,1);
@@ -87,12 +95,22 @@ body {
   color: var(--c-text);
   background-color: var(--c-bg);
   background-image:
-    radial-gradient(900px 520px at 100% -6%, #FFD3E7 0%, rgba(255,211,231,0) 55%),
-    radial-gradient(820px 520px at 0% 6%, #ECD9FF 0%, rgba(236,217,255,0) 52%);
+    radial-gradient(900px 520px at 100% -6%, #FCE0EC 0%, rgba(252,224,236,0) 55%),
+    radial-gradient(820px 520px at 0% 6%, #ECE3FB 0%, rgba(236,227,251,0) 52%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
+  /* sticky footer: body を縦フレックスにして main を伸ばし、footer を最下部へ固定。
+     短いページでフッター下にパステル帯が残る「浮き」を防ぐ。
+     body 直下の子は header.appbar / main#app / footer.appfoot / <script>（script は不可視で高さ0）。 */
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
+/* main を伸縮させて余白を吸わせる。footer は縮まず最下部に張り付く。
+   ※ body が flex になると .page-wrap の margin:0 auto が交差軸で main を縮めてしまうため、
+     width:100% を明示して本来の max-width(960) + 中央寄せに戻す。 */
+main#app { flex: 1 0 auto; width: 100%; }
+.appbar, .appfoot { flex: none; }
 h1,h2,h3 { line-height: 1.4; margin: 0; font-weight: 700; }
 p { margin: 0; }
 a { color: var(--c-brand-strong); text-decoration: none; }
@@ -131,13 +149,16 @@ button { font-family: inherit; cursor: pointer; }
   background: var(--c-brand); color: #fff;
   display: grid; place-items: center; font-family: var(--font-mono); font-size: 15px;
 }
+/* ロゴマークに SVG（terminal アイコン等）を入れたとき用 */
+.logo__mark .icon, .logo__mark svg { width: 18px; height: 18px; }
 .appbar__meta { font-size: var(--fs-sm); color: var(--c-text-muted); }
 .appbar__actions { display: flex; align-items: center; gap: var(--space-3); }
 .appfoot {
   padding: var(--space-5); text-align: center;
-  font-size: var(--fs-sm); color: var(--c-text-faint);
+  font-size: var(--fs-sm); color: var(--c-text-muted);
   border-top: 1px solid var(--c-border); background: var(--c-surface);
-  margin-top: var(--space-7);
+  /* margin-top は付けない: sticky footer 下に隙間（ピンク帯）が出るのを防ぐため。
+     ページ内コンテンツとの間隔は各 view の padding（.view 等）で確保する。 */
 }
 .appfoot a { color: var(--c-text-muted); }
 
@@ -191,7 +212,7 @@ button { font-family: inherit; cursor: pointer; }
   font-size: var(--fs-xs); font-weight: 700; padding: 3px 10px; border-radius: var(--radius-pill); }
 .badge--done { background: var(--c-success-soft); color: var(--c-success); }
 .badge--todo { background: var(--c-surface-2); color: var(--c-text-faint); }
-.badge--achievement { background: var(--c-accent-soft); color: #B4471F; }
+.badge--achievement { background: var(--c-accent-soft); color: var(--c-accent-strong); }
 .badge--new { background: var(--c-brand-soft); color: var(--c-brand-strong); }
 /* round check/empty marker */
 .check {
@@ -248,9 +269,11 @@ button { font-family: inherit; cursor: pointer; }
 .terminal__dots .y { background: #FEBC2E; }
 .terminal__dots .g { background: #28C840; }
 .terminal__title { font-family: var(--font-mono); font-size: var(--fs-xs);
-  color: var(--c-term-comment); margin-left: var(--space-2); }
+  color: var(--c-term-comment); margin-left: var(--space-2);
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .terminal__copy {
-  margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+  margin-left: auto; flex-shrink: 0; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 6px;
   background: rgba(255,255,255,.08); color: var(--c-term-text);
   border: none; border-radius: var(--radius-sm); padding: 6px 10px;
   font-size: var(--fs-xs); font-weight: 700; transition: background var(--dur) var(--ease);
@@ -275,8 +298,10 @@ button { font-family: inherit; cursor: pointer; }
 .callout__body { font-size: var(--fs-sm); line-height: 1.7; }
 .callout--hint { background: var(--c-info-soft); border-color: var(--c-info); }
 .callout--hint .callout__title { color: var(--c-info); }
+.callout--hint .callout__icon { color: var(--c-info); }
 .callout--warn { background: var(--c-warning-soft); border-color: var(--c-warning); }
-.callout--warn .callout__title { color: #9A6E00; }
+.callout--warn .callout__title { color: var(--c-warning-dark); }
+.callout--warn .callout__icon { color: var(--c-warning-dark); }
 
 /* =========================================================================
    Course cards (TOP 教材選択)
@@ -290,14 +315,25 @@ button { font-family: inherit; cursor: pointer; }
   transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 .course-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-.course-card__emoji { font-size: 40px; line-height: 1; }
+/* ロゴ枠: 教材アイコン（git / terminal / python ロゴ）を四角タイルに収める。
+   絵文字の名残として .course-card__emoji を残しつつ、中の SVG をこのサイズで描画。 */
+.course-card__emoji,
+.course-card__logo {
+  width: 52px; height: 52px; flex: none; line-height: 1;
+  display: grid; place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--c-brand-soft); color: var(--c-brand-strong);
+}
+.course-card__emoji .icon, .course-card__emoji svg,
+.course-card__logo .icon, .course-card__logo svg { width: 30px; height: 30px; }
 .course-card__title { font-size: var(--fs-h2); }
 .course-card__desc { font-size: var(--fs-sm); color: var(--c-text-muted); flex: 1; }
 .course-card__foot { display: flex; align-items: center; justify-content: space-between;
   gap: var(--space-3); margin-top: var(--space-2); }
 .course-card--soon { background: var(--c-surface-2); box-shadow: none; }
 .course-card--soon:hover { transform: none; box-shadow: none; }
-.course-card--soon .course-card__emoji { filter: grayscale(1); opacity: .55; }
+.course-card--soon .course-card__emoji,
+.course-card--soon .course-card__logo { background: var(--c-surface); color: var(--c-text-faint); opacity: .8; }
 .course-card--soon .course-card__title { color: var(--c-text-muted); }
 
 /* =========================================================================
@@ -335,8 +371,11 @@ button { font-family: inherit; cursor: pointer; }
 /* =========================================================================
    Learning page layout (学習ページ) — chapter-nav + content
    ========================================================================= */
-.learn { display: grid; grid-template-columns: 240px 1fr; gap: var(--space-6);
+.learn { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--space-6);
   padding: var(--space-5) 0; }
+/* minmax(0,1fr): コンテンツ列が min-content（ターミナルの長い行）に引っ張られて
+   膨張するのを防ぐ。長い行はターミナル内の overflow-x:auto で横スクロールさせる。 */
+.content-card { min-width: 0; }
 .chapter-nav { font-size: var(--fs-sm); }
 .chapter-nav__title { font-weight: 700; font-size: var(--fs-sm); color: var(--c-text-muted);
   text-transform: none; margin-bottom: var(--space-2); }
@@ -466,7 +505,7 @@ button { font-family: inherit; cursor: pointer; }
    Responsive
    ========================================================================= */
 @media (max-width: 960px) {
-  .learn { grid-template-columns: 1fr; }
+  .learn { grid-template-columns: minmax(0, 1fr); }
   .chapter-nav { display: none; }
   .chapter-nav__mobile { display: block; margin-bottom: var(--space-4); }
   .chapter-nav__mobile summary {
@@ -491,6 +530,37 @@ button { font-family: inherit; cursor: pointer; }
   .read-toggle { justify-content: center; }
   :root { --fs-display: 24px; --fs-h1: 20px; }
 }
+
+/* =========================================================================
+   Iconography（emoji 廃止 → インラインSVG）
+   js/icons.js の Icon(name, opts) が返す <svg> をここで整える。
+   装飾アイコンは currentColor を継承し、文脈の色（ピンク/情報青/警告/成功）に染まる。
+   ロゴ（git / github / python / terminal）も同じ枠に収まるサイズで扱う。
+   ========================================================================= */
+.icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.15em; height: 1.15em; /* 既定はテキスト連動。size 指定時は属性が優先 */
+  vertical-align: -0.18em; /* テキストのベースラインに馴染ませる */
+  flex: none; line-height: 0;
+}
+.icon svg { display: block; width: 100%; height: 100%; }
+/* fill 系ロゴ（GitHub マーク等）も currentColor 追従にできるよう、
+   icons.js 側で fill="currentColor" を指定。stroke 系UIアイコンは stroke="currentColor"。 */
+
+/* テキストとアイコンを横並びにする時の最小ヘルパー（ラベル必須＝色だけに頼らない） */
+.with-icon { display: inline-flex; align-items: center; gap: var(--space-2); }
+
+/* 各スロットに SVG を入れたときのサイズ（従来 emoji/グリフ前提だった箇所の受け皿） */
+.callout__icon svg, .callout__icon .icon { width: 20px; height: 20px; }
+.review-card__icon svg, .review-card__icon .icon { width: 28px; height: 28px; }
+.choice__result svg, .choice__result .icon { width: 20px; height: 20px; }
+.check svg, .check .icon { width: 64%; height: 64%; }
+.chapter-card__arrow svg, .chapter-card__arrow .icon,
+.breadcrumb__sep svg, .breadcrumb__sep .icon { width: 18px; height: 18px; }
+.terminal__copy svg, .terminal__copy .icon { width: 15px; height: 15px; }
+/* お祝い/空状態の大アイコン（emoji 廃止 → 上品な SVG）。色は文脈で付与。 */
+.quiz-result__emoji svg, .quiz-result__emoji .icon { width: 48px; height: 48px; }
+.review-empty__emoji svg, .review-empty__emoji .icon { width: 40px; height: 40px; }
 
 /* reduced motion */
 @media (prefers-reduced-motion: reduce) {

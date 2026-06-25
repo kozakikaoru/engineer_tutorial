@@ -13,7 +13,7 @@
 <header class="appbar">
   <div class="page-wrap" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0;">
     <a class="logo" href="#/" aria-label="TermLearn ホームへ">
-      <span class="logo__mark" aria-hidden="true">⌘</span>
+      <span class="logo__mark" aria-hidden="true"></span>
       <span>TermLearn</span>
     </a>
     <nav class="appbar__actions" aria-label="ユーティリティ">
@@ -44,6 +44,7 @@
 -->
 <script src="js/glossary.js"></script>
 <script src="js/store.js"></script>
+<script src="js/icons.js"></script>
 <script src="js/render.js"></script>
 <!-- コンテンツ（教材を増やすときはここに1行追加するだけ） -->
 <script>window.COURSES = window.COURSES || [];</script>
@@ -53,9 +54,14 @@
 <!-- ルーター（最後。COURSES が出そろってから起動） -->
 <script src="js/router.js"></script>
 
-<!-- ヘッダーの復習バッジは router 起動時に更新するが、初期表示も整えておく -->
+<!-- ヘッダーのロゴマークと復習バッジは、icons.js / store.js が出そろってから整える -->
 <script>
   (function () {
+    try {
+      // ロゴマーク: 公式ロゴ路線。terminal アイコンを差し込む（装飾＝隣に "TermLearn" 表記あり）。
+      var mark = document.querySelector('.logo__mark');
+      if (mark && window.Icon) mark.innerHTML = window.Icon('terminal');
+    } catch (e) {}
     try {
       var badge = document.getElementById('reviewBadge');
       var count = document.getElementById('reviewCount');

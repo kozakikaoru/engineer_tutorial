@@ -1,5 +1,5 @@
 /* =========================================================================
-   content/terminal.js — 教材A 🖥️ ターミナルコマンド
+   content/terminal.js — 教材A ターミナルコマンド（アイコン: terminal）
    window.COURSES へ push する。データのみ（表示は render/router 側）。
    方針: 1ページ1コマンド／情報量少なめ／ですます調／用語は [[ ]] でチップ化。
    ========================================================================= */
@@ -10,7 +10,7 @@
   window.COURSES.push({
     id: 'terminal',
     title: 'ターミナルコマンド',
-    emoji: '🖥️',
+    icon: 'terminal', // 教材アイコン（ターミナル窓ロゴ）。router 側で Icon(course.icon)。
     description: '黒い画面（ターミナル）の基本操作。`pwd` `ls` `cd` など、まずはここから。',
     chapters: [
 

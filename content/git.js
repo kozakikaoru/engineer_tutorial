@@ -1,5 +1,5 @@
 /* =========================================================================
-   content/git.js — 教材B 🌿 Git
+   content/git.js — 教材B Git（アイコン: git 公式ロゴ）
    window.COURSES へ push する。データのみ。
    方針: 最新の git 基準（switch/restore を主役、checkout は補足程度）。
          1ページ1コマンド／ですます調／用語は [[ ]] でチップ化／常用のみ。
@@ -11,7 +11,7 @@
   window.COURSES.push({
     id: 'git',
     title: 'Git',
-    emoji: '🌿',
+    icon: 'git', // 教材アイコン（Git 公式ロゴ）。router 側で Icon(course.icon)。
     description: '変更履歴を残す仕組み。「なぜ使う？」から PR がマージされるまでを、やさしく。',
     chapters: [
 
