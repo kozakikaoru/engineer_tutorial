@@ -186,7 +186,10 @@
     }
 
     var href = '#/page/' + course.id + '/' + ch.id + '/' + ch.pages[0].id;
-    var card =
+    // 章カードはクリーンな1行（番号バッジ／本文／状態pill＋ページ数チップ＋丸矢印）。
+    // ※ 参考画像どおり、章テスト導線（旧 .chapter-quiz-link バー）は一覧に出さない。
+    //   章テストは学習ページの章ナビ「章テストを受ける」(chapterNavList) から受けられる（機能は維持）。
+    return '' +
       '<a class="chapter-card" href="' + href + '" aria-label="' + R.esc(ch.title) + ' を開く">' +
         numBadge(idx) +
         '<div class="chapter-card__body">' +
@@ -198,19 +201,6 @@
           '<span class="arrow-btn" aria-hidden="true">' + Icon('arrow-right') + '</span>' +
         '</div>' +
       '</a>';
-
-    // テスト導線（全ページ読了で活性、それ以外は無効＋理由表示）。章カードの下にぶら下げる。
-    var quizLink = '';
-    if (ch.quiz && ch.quiz.length) {
-      if (allRead) {
-        quizLink = '<a class="btn btn--ghost btn--sm chapter-quiz-link" href="#/quiz/' + course.id + '/' + ch.id + '">' +
-          Icon('doc') + ' 章' + (idx + 1) + ' テストを受ける（全' + ch.quiz.length + '問）</a>';
-      } else {
-        quizLink = '<button class="btn btn--ghost btn--sm chapter-quiz-link" disabled aria-disabled="true">' +
-          Icon('lock', { title: 'ロック中' }) + ' テストは全ページ読了で受けられます</button>';
-      }
-    }
-    return card + quizLink;
   }
 
   /* ---------- 共通パーツ ---------- */
@@ -244,38 +234,27 @@
     return { done: done, total: total, pct: R.pct(done, total) };
   }
 
-  // TOP 主役に出す「続きから」の教材を選ぶ：進捗のある教材があればその先頭、無ければ最初の公開教材。
-  function pickPrimaryCourse() {
-    var firstAvailable = null;
-    for (var i = 0; i < COURSES.length; i++) {
-      var c = COURSES[i];
-      if (c.comingSoon || !c.chapters.length) continue;
-      if (firstAvailable === null) firstAvailable = c;
-      if (Store.courseProgress(c).done > 0) return c; // 進捗あり＝続きから
-    }
-    return firstAvailable;
-  }
-
-  // コース主役カード（ロゴタイル＋タイトル＋タグライン＋ステップ＋CTA、下に章カード縦リスト）
+  // 教材カード（大きな1枚のコンテナ：ロゴタイル＋タイトル＋タグライン＋ステップ＋CTA、下に章カード縦リスト）
+  // TOP では各教材ぶん縦に積むため、見出し id は教材ごとに一意（course-hero-title-<id>）にする。
   function courseHeroTop(course) {
     var t = resumeTarget(course);
+    var titleId = 'course-hero-title-' + course.id;
     var chapterCards = course.chapters.map(function (ch, idx) {
       return chapterCard(course, ch, idx);
     }).join('');
 
     return '' +
-      '<article class="course-hero" aria-labelledby="course-hero-title">' +
+      '<article class="course-hero" aria-labelledby="' + titleId + '">' +
         '<div class="course-hero__top">' +
           '<div class="course-hero__logo">' + Icon(course.icon, { size: 42 }) +
             Icon('spark', { class: 'course-hero__logo-spark' }) +
           '</div>' +
           '<div class="course-hero__head">' +
-            '<div id="course-hero-title" class="course-hero__title">' + R.esc(course.title) + ' ' +
+            '<div id="' + titleId + '" class="course-hero__title">' + R.esc(course.title) + ' ' +
               Icon('star4', { class: 'spark' }) + '</div>' +
             '<p class="course-hero__tag">' + R.esc(courseTagline(course)) + '</p>' +
-            stepper(course) +
           '</div>' +
-          '<a class="btn btn--primary course-hero__cta" href="' + t.href + '">' + t.label + ' ' + Icon('arrow-right') + '</a>' +
+          stepper(course) +
         '</div>' +
         '<div class="chapter-list">' + chapterCards + '</div>' +
       '</article>';
@@ -318,41 +297,44 @@
 
   function viewTop() {
     var op = overallProgress();
-    var primary = pickPrimaryCourse();
 
-    // ヒーロー（おかえり！＋進捗ピル）。👋 は使わず sparkle（SVG）で。
+    // メイン上部バー（左: おかえり！＋サブ / 右: 進捗カード＋丸アバター）。
+    // 絵文字は使わず sparkle（SVG）で。アバターは装飾（chevron-down）。
     var hero =
-      '<div class="hero">' +
-        Icon('cloud', { class: 'hero__cloud' }) +
-        Icon('cloud', { class: 'hero__cloud hero__cloud--2' }) +
-        '<div class="hero__copy">' +
-          '<h1 class="hero__title">おかえり！' + Icon('spark', { class: 'spark spark--anim' }) + '</h1>' +
-          '<p class="hero__sub">さあ、今日も一歩ずつ進んでいこう。</p>' +
+      '<div class="topbar">' +
+        '<div class="topbar__copy">' +
+          '<h1 class="topbar__title">おかえり！' + Icon('spark', { class: 'spark spark--anim' }) + '</h1>' +
+          '<p class="topbar__sub">さあ、今日も一歩ずつ進んでいこう。</p>' +
         '</div>' +
-        '<div class="progress-pill" role="group" aria-label="現在の進捗 ' + op.pct + 'パーセント（全教材 ' + op.done + '／' + op.total + ' ページ）">' +
-          '<span class="progress-pill__icon" aria-hidden="true">' + Icon('spark') + '</span>' +
-          '<div class="progress-pill__body">' +
-            '<div class="progress-pill__label">現在の進捗</div>' +
-            '<div class="progress-pill__pct">' + op.pct + '%</div>' +
-            '<div class="progress__track"><div class="progress__fill" style="width:' + op.pct + '%"></div></div>' +
+        '<div class="topbar__right">' +
+          '<div class="progress-pill" role="group" aria-label="現在の進捗 ' + op.pct + 'パーセント（全教材 ' + op.done + '／' + op.total + ' ページ）">' +
+            '<span class="progress-pill__icon" aria-hidden="true">' + Icon('spark') + '</span>' +
+            '<div class="progress-pill__body">' +
+              '<div class="progress-pill__label">現在の進捗</div>' +
+              '<div class="progress-pill__pct">' + op.pct + '%</div>' +
+              '<div class="progress__track"><div class="progress__fill" style="width:' + op.pct + '%"></div></div>' +
+            '</div>' +
           '</div>' +
+          '<div class="avatar" aria-hidden="true"><span class="avatar__chevron">' + Icon('chevron-down') + '</span></div>' +
         '</div>' +
       '</div>';
 
-    // 主役のコースカード
-    var primaryHtml = primary ? courseHeroTop(primary) : '';
+    // TOP は「各教材ぶんの大きな教材カードを縦に積む」（ターミナル→Git→…）。
+    // 公開済み教材（chapters あり）を素直に大カードで並べる。
+    var available = COURSES.filter(function (c) { return !c.comingSoon && c.chapters.length; });
+    var stackedHtml = available.map(courseHeroTop).join('');
 
-    // ほかの教材（主役以外の公開教材＋準備中）。主役が無い場合は全件をミニカードに。
-    var others = COURSES.filter(function (c) { return c !== primary; });
-    var othersHtml = others.length
+    // ほかの教材（準備中）。公開教材より下に淡色のミニカードでまとめる。
+    var soon = COURSES.filter(function (c) { return c.comingSoon; });
+    var othersHtml = soon.length
       ? '<h2 class="section-title">' + Icon('star4', { class: 'spark' }) + ' ほかの教材</h2>' +
-        '<div class="course-grid">' + others.map(miniCard).join('') + '</div>'
+        '<div class="course-grid">' + soon.map(miniCard).join('') + '</div>'
       : '';
 
     setHTML(
       sectionOpen() +
         hero +
-        primaryHtml +
+        stackedHtml +
         othersHtml +
       '</section>'
     );
@@ -392,9 +374,9 @@
               '<h1 id="course-hero-title" class="course-hero__title">' + R.esc(course.title) + ' ' +
                 Icon('star4', { class: 'spark' }) + '</h1>' +
               '<p class="course-hero__tag">' + R.esc(courseTagline(course)) + '</p>' +
-              stepper(course) +
               progressBar +
             '</div>' +
+            stepper(course) +
           '</div>' +
           '<div class="chapter-list">' + chapters + '</div>' +
         '</article>' +

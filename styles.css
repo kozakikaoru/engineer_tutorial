@@ -147,10 +147,11 @@ svg { display: block; }
 .page-wrap { max-width: 1000px; margin: 0 auto; padding: 0 var(--space-5); }
 .prose { max-width: 680px; }
 
-/* 各画面の縦リズム。上余白は app-shell（サイドバーと同じ天）に任せ、
-   メイン側は下方向のリズムだけ持たせる（サイドバーの天とメインの天を揃える）。 */
-.view { padding: 0 0 var(--space-7); }
-.view--page { padding: 0 0 var(--space-7); }
+/* 各画面のコンテンツ幅。メインの内パディングは .app-shell > .page-wrap が持つので
+   ここでは横パディングを持たず、広い画面で間延びしないよう max-width だけ与えて中央寄せ。
+   5画面すべて同じ最大幅に揃えてレイアウトを整然とさせる。 */
+.view { padding: 0; max-width: 1080px; margin: 0 auto; }
+.view--page { max-width: 1180px; }   /* 学習ページは章ナビ＋本文の2カラムぶん少し広い */
 
 /* SVG 装飾アイコン（sparkle/star/dot）— 既定は currentColor 継承の装飾 */
 .deco { position: absolute; pointer-events: none; }
@@ -187,37 +188,48 @@ svg { display: block; }
   animation: twinkle 4s var(--ease) infinite; animation-delay: -3s; }
 
 /* =========================================================================
-   アプリの骨格 = 左サイドバー + 右メイン（参考画像のダッシュボード構成）
-   - メインは minmax(0,1fr)（サイドバーで本文が潰れない／長行はターミナル内部でスクロール）
-   - 背景装飾の上に乗るよう z-index:1
+   アプリの骨格 = 左サイドバー（フルハイト・左端フラッシュ）+ 右メイン
+   参考画像のダッシュボード構成。
+   - shell 自体は全幅・min-height:100vh の2カラムグリッド（中央寄せしない＝サイドバーが左端へ）。
+   - 左 280px のサイドバー / 右 minmax(0,1fr) のメイン（長行はターミナル内部でスクロール）。
+   - gap は持たせない（サイドバーが自前の右境界＋影で仕切る＝隙間に背景が覗かない）。
+   - 背景装飾(.bg-deco)の上に乗るよう z-index:1。
    ========================================================================= */
 .app-shell {
   position: relative; z-index: 1;
   display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
-  align-items: start;
-  gap: var(--space-5);
-  max-width: 1180px; margin: 0 auto;
-  padding: var(--space-5) var(--space-5) 0;
+  grid-template-columns: 280px minmax(0, 1fr);
+  align-items: stretch;
+  min-height: 100vh;
 }
-/* メイン側は app-shell 内では中央寄せ不要（左がサイドバー）。横幅はトラックに従う。 */
-.app-shell > .page-wrap { max-width: none; margin: 0; padding: 0; min-width: 0; }
+/* メインは内側で最大幅＋たっぷりの内パディング（~32px）。中央寄せで広い画面でも整然と。 */
+.app-shell > .page-wrap {
+  max-width: none; min-width: 0;
+  margin: 0;
+  padding: var(--space-6) var(--space-6) var(--space-7);
+}
 
 /* =========================================================================
-   左サイドバー（縦メニュー）
+   左サイドバー（フルハイト・左端フラッシュ・白レール）
+   浮いた角丸カードにはしない。画面の高さいっぱい、左端にぴったり、白背景、
+   右側に細い境界＋ごく淡い影。中身は sticky でスクロール追従。
    ========================================================================= */
 .sidebar {
-  position: sticky; top: var(--space-5);
+  position: relative;
+  background: var(--c-surface);
+  border-right: 1px solid var(--c-border);
+  box-shadow: 1px 0 0 rgba(120,40,80,.03), var(--shadow-sm);
+}
+/* sticky な内側コンテナ＝ビューポート高で縦に並べ、最下部の雲を margin-top:auto で押し下げる。
+   overflow:hidden で雲のはみ出しを切る（メニュー/streak には絶対に被らせない）。 */
+.sidebar__inner {
+  position: sticky; top: 0;
+  height: 100vh;
   display: flex; flex-direction: column;
-  min-height: 0;
-  background: linear-gradient(170deg, #FFFFFF 0%, #FFF4F9 100%);
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-5) var(--space-4) var(--space-4);
-  box-shadow: var(--shadow-md), var(--inner-hi);
+  padding: var(--space-6) var(--space-4) var(--space-4);
   overflow: hidden;
 }
-.sidebar__logo { margin: 0 var(--space-2) var(--space-6); }
+.sidebar__logo { margin: 0 var(--space-2) var(--space-7); }
 
 .logo { display: flex; align-items: center; gap: var(--space-3); font-weight: 800; font-size: var(--fs-h3);
   color: var(--c-text); text-decoration: none; }
@@ -232,7 +244,7 @@ svg { display: block; }
 .logo__name { letter-spacing: -.01em; }
 
 /* 縦メニュー（線アイコン＋ラベル。余白広め・角丸・ホバー/現在地はピンクのソフトpill） */
-.sidenav { display: flex; flex-direction: column; gap: 4px; }
+.sidenav { display: flex; flex-direction: column; gap: var(--space-1); }
 .sidenav__item {
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3) var(--space-3);
@@ -245,7 +257,7 @@ svg { display: block; }
 .sidenav__icon svg { width: 20px; height: 20px; }
 .sidenav__label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-strong); text-decoration: none; }
-/* 現在地 = ピンクのソフトpill背景＋ピンクのアイコン/文字 */
+/* 現在地（ホーム）= ピンクのソフトpill背景＋ピンクのアイコン/文字で塗る。 */
 .sidenav__item.is-current { background: var(--c-brand-soft); color: var(--c-brand-strong);
   box-shadow: var(--inner-hi); }
 /* 復習件数バッジ（現在地でも見えるよう濃いピンク地＋白） */
@@ -253,24 +265,51 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
   display: inline-grid; place-items: center; border-radius: var(--radius-pill);
   background: var(--c-brand-deep); color: #fff; font-size: var(--fs-xs); font-weight: 800;
   font-variant-numeric: tabular-nums; box-shadow: var(--inner-hi); }
-/* 「近日」= disabled 項目（押せない・小タグ）。色だけに頼らずテキスト「近日」を併記。
-   無効でも文字は読めるべきなので、active(muted) よりわずかに淡いが AA を満たす色に
-   （#80697A = サイドバー地 4.72:1 ✅AA）。disabled の手掛かりは 近日タグ＋not-allowed＋
-   ホバーで色が変わらないこと（pillが付かない）で担保。 */
-.sidenav__item.is-soon { color: #80697A; cursor: not-allowed; }
-.sidenav__item.is-soon:hover { background: none; color: #80697A; }
-.sidenav__soon { flex: none; font-size: 10px; font-weight: 800; letter-spacing: .02em;
-  color: #6F5C6B; background: var(--c-surface-2);                 /* surface-2 地 5.31:1 ✅AA */
-  padding: 2px 7px; border-radius: var(--radius-pill); }
+/* プレースホルダ項目（学習ロードマップ/ブックマーク/設定）= 見た目は同じ・遷移しない。
+   操作対象でないため cursor:default で無反応（dead click でもよいが反応させない）。
+   文字色は他項目と同じ muted（AA）。色だけで状態を示さない＝視覚的にも同列に見える。 */
+.sidenav__item.is-soon { cursor: default; }
+.sidenav__item.is-soon:hover { background: none; color: var(--c-text-muted); }
 
-/* サイドバー下部のやわらかい雲イラスト（装飾・PCのみ） */
-.sidebar__cloud { position: relative; margin-top: auto; height: 96px; }
-.sidebar__cloud-img { position: absolute; bottom: -10px; left: -8px; width: 150px; color: #FCE3EF;
+/* 区切り線（淡いパステル） */
+.sidebar__divider { border: none; border-top: 1px solid var(--c-border);
+  margin: var(--space-5) var(--space-2); }
+
+/* 学習の連続記録カード（炎＋小ラベル＋大きな日数）。淡ピンク地のソフトカード。 */
+.streak {
+  display: flex; align-items: center; gap: var(--space-3);
+  margin: 0 var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: linear-gradient(150deg, #FFFFFF 0%, #FFF1F7 100%);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm), var(--inner-hi);
+}
+.streak__icon {
+  width: 38px; height: 38px; border-radius: 12px; flex: none;
+  display: grid; place-items: center;
+  background: linear-gradient(150deg, #FBD0E4 0%, #F7B6D3 100%);
+  color: var(--c-brand-deep);
+  box-shadow: var(--inner-hi);
+}
+.streak__icon svg { width: 21px; height: 21px; }
+.streak__body { min-width: 0; }
+.streak__label { font-size: var(--fs-xs); color: var(--c-text-muted); font-weight: 700; }
+.streak__value { font-size: 20px; font-weight: 800; color: var(--c-brand-strong); line-height: 1.2;
+  font-variant-numeric: tabular-nums; }
+.streak__unit { font-size: var(--fs-sm); }
+
+/* 最下部のやわらかい雲イラスト（ピンク＋ラベンダーの重なり雲・装飾・PCのみ）。
+   margin-top:auto で最下部へ押し下げ、はみ出しは .sidebar__inner の overflow:hidden で切る。
+   メニュー/streak には絶対に被らない（上の要素とは別フローで最下部に置かれる）。 */
+.sidebar__cloud { position: relative; margin-top: auto; height: 104px; }
+.sidebar__cloud-img { position: absolute; bottom: -14px; width: 100%; color: #FCE3EF;
   animation: float-cloud 14s var(--ease) infinite; }
 .sidebar__cloud-img svg { width: 100%; height: auto; }
-.sidebar__cloud-img--2 { bottom: 6px; left: auto; right: -14px; width: 96px; color: #EFE7FB;
+.sidebar__cloud-img--lav { bottom: 6px; left: -10px; width: 64%; color: #EFE7FB;
   animation-delay: -6s; }
-.sidebar__cloud-spark { position: absolute; bottom: 54px; left: 50%; width: 16px; height: 16px;
+.sidebar__cloud-img--pink { bottom: -18px; right: -12px; left: auto; width: 78%; color: #FCE3EF; }
+.sidebar__cloud-spark { position: absolute; bottom: 60px; left: 46%; width: 16px; height: 16px;
   color: #F58EC0; animation: twinkle 3.2s var(--ease) infinite; }
 .sidebar__cloud-spark svg { width: 100%; height: 100%; }
 
@@ -283,35 +322,29 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
 .appfoot a { color: var(--c-text-muted); }
 
 /* =========================================================================
-   おかえり！ヒーローヘッダー（TOP 上部）
+   メイン上部バー（おかえり！ ＋ 進捗カード ＋ 丸アバター）
+   参考画像どおり大きな囲み箱にはしない＝クリーンなバー。背景は透過（ページ地に乗る）。
    ========================================================================= */
-.hero {
-  position: relative; overflow: hidden;
-  display: flex; align-items: center; justify-content: space-between; gap: var(--space-6);
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-5);
   flex-wrap: wrap;
-  background: var(--grad-hero);
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-7) var(--space-6);
-  box-shadow: var(--shadow-md), var(--inner-hi);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-7);
 }
-.hero__cloud { position: absolute; top: -40px; right: -30px; width: 220px; color: #FFFFFF; opacity: .6; }
-.hero__cloud--2 { top: auto; right: auto; bottom: -50px; left: -40px; width: 180px; color: #F4ECFE; opacity: .7; }
-.hero__copy { position: relative; min-width: 240px; flex: 1; }
-.hero__title {
+.topbar__copy { min-width: 220px; flex: 1; }
+.topbar__title {
   font-size: var(--fs-display); font-weight: 800; color: #4A1E38;
   letter-spacing: -.02em; display: inline-flex; align-items: center; gap: var(--space-3);
 }
-.hero__title .spark { color: #F58EC0; width: 30px; height: 30px; }
-.hero__sub { color: var(--c-text-muted); margin-top: var(--space-2); font-size: var(--fs-h3); }
+.topbar__title .spark { color: #F58EC0; width: 28px; height: 28px; }
+.topbar__sub { color: var(--c-text-muted); margin-top: var(--space-1); font-size: var(--fs-h3); }
+.topbar__right { display: flex; align-items: center; gap: var(--space-4); }
 
-/* 進捗ピルカード（ヒーロー右） */
+/* 進捗カード（上部バー右） */
 .progress-pill {
   position: relative; min-width: 230px;
   background: linear-gradient(150deg, #FFFFFF, #FFF1F7);
   border: 1px solid var(--c-border);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   padding: var(--space-4) var(--space-5);
   box-shadow: var(--shadow-md), var(--inner-hi);
   display: flex; align-items: center; gap: var(--space-4);
@@ -328,6 +361,20 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
 .progress-pill__pct { font-size: 22px; font-weight: 800; color: var(--c-brand-strong);
   font-variant-numeric: tabular-nums; line-height: 1.1; }
 .progress-pill .progress__track { margin-top: 7px; }
+
+/* 丸アバター（ピンクグラデ円＋下向き chevron・装飾） */
+.avatar {
+  position: relative; width: 46px; height: 46px; border-radius: 50%; flex: none;
+  background: var(--grad-brand);
+  box-shadow: var(--shadow-pink), var(--inner-hi-strong);
+}
+.avatar__chevron {
+  position: absolute; right: -3px; bottom: -3px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; color: var(--c-brand-strong);
+  display: grid; place-items: center; box-shadow: var(--shadow-sm);
+}
+.avatar__chevron svg { width: 13px; height: 13px; }
 
 /* =========================================================================
    Progress bar（共通）— 細いピンクグラデ
@@ -432,7 +479,7 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
   box-shadow: var(--shadow-lg), var(--inner-hi);
   margin-bottom: var(--space-6);
 }
-.course-hero__top { display: flex; align-items: flex-start; gap: var(--space-5); flex-wrap: wrap; }
+.course-hero__top { display: flex; align-items: center; gap: var(--space-4) var(--space-5); flex-wrap: wrap; }
 .course-hero__logo {
   position: relative; width: 76px; height: 76px; border-radius: 22px; flex: none;
   background: var(--grad-brand); color: #fff;
@@ -442,7 +489,7 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
 .course-hero__logo svg { width: 42px; height: 42px; }
 /* ロゴタイル右上の小 sparkle（白・装飾）。prototype のインライン装飾を class 化。 */
 .course-hero__logo-spark { position: absolute; top: -9px; right: -9px; width: 18px; height: 18px; color: #fff; }
-.course-hero__head { flex: 1; min-width: 200px; }
+.course-hero__head { flex: 0 1 auto; min-width: 200px; }
 .course-hero__title { font-size: 26px; font-weight: 800; color: #4A1E38;
   display: inline-flex; align-items: center; gap: var(--space-2); }
 .course-hero__title .spark { color: #F58EC0; width: 22px; height: 22px; }
@@ -450,7 +497,10 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
 .course-hero__cta { align-self: flex-start; }
 
 /* ステップ進捗インジケーター（①②③④⑤ … 旗） */
-.stepper { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin-top: var(--space-2); }
+.stepper { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin-top: 0; }
+/* 教材ヘッダー行では、ステップを右側に横長に伸ばす（参考デザイン準拠）。
+   連結線(__link)を伸縮させ、章数が少ない教材でも極端に間延びしないよう max で抑える。 */
+.course-hero__top > .stepper { flex: 1 1 240px; }
 .stepper__node {
   width: 38px; height: 38px; border-radius: 50%; flex: none;
   display: grid; place-items: center; font-weight: 800; font-size: var(--fs-sm);
@@ -464,8 +514,8 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
 .stepper__node--todo { background: #fff; color: var(--c-text-muted);
   border: 2px solid var(--c-border-strong); box-shadow: var(--shadow-sm); }
 .stepper__node--done svg { width: 18px; height: 18px; }
-.stepper__link { width: 26px; height: 0; border-top: 3px dotted var(--c-border-strong);
-  flex: none; }
+.stepper__link { height: 0; border-top: 3px dotted var(--c-border-strong);
+  flex: 1 1 auto; min-width: 16px; max-width: 64px; }
 .stepper__link.is-on { border-top-color: var(--c-brand); }
 .stepper__flag {
   width: 38px; height: 38px; border-radius: 50%; flex: none; margin-left: 2px;
@@ -532,10 +582,8 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
 }
 .arrow-btn svg { width: 20px; height: 20px; }
 .chapter-card:hover .arrow-btn { transform: translateX(2px) scale(1.05); }
-
-/* 章テスト導線（章カードの下にぶら下げる小リンク） */
-.chapter-quiz-link { margin: calc(var(--space-2) * -1) 0 var(--space-2) 66px; }
-@media (max-width: 640px) { .chapter-quiz-link { margin-left: 0; } }
+/* ※ 章テスト導線（旧 .chapter-quiz-link バー）は章カード一覧から撤去。
+   章テストは学習ページの章ナビ「章テストを受ける」から受けられる（機能は維持）。 */
 
 /* =========================================================================
    コース選択グリッド（小カード：続き/準備中）
@@ -751,17 +799,18 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
    Responsive
    ========================================================================= */
 @media (max-width: 960px) {
-  /* サイドバーを上部のコンパクトバーに畳む（ロゴ＋ホーム/復習リスト）。
-     仮メニュー（近日）と下部の雲イラストは畳んだ状態では隠す。 */
-  .app-shell { grid-template-columns: minmax(0, 1fr); gap: var(--space-4);
-    padding: var(--space-4) var(--space-5) 0; }
-  .sidebar { position: static; flex-direction: row; align-items: center; gap: var(--space-3);
-    border-radius: var(--radius-2xl); padding: var(--space-3) var(--space-4); overflow: visible; }
+  /* サイドバーを上部のコンパクトバー（ドロワー）に畳む。フルハイトのレールを解除し、
+     1行のヘッダーに：ロゴ＋メニュー横並び。下部の雲・streak・区切り線は畳んだ状態では隠す。 */
+  .app-shell { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .sidebar { border-right: none; border-bottom: 1px solid var(--c-border); box-shadow: var(--shadow-sm); }
+  .sidebar__inner { position: static; height: auto; overflow: visible;
+    flex-direction: row; align-items: center; gap: var(--space-3);
+    padding: var(--space-3) var(--space-4); }
   .sidebar__logo { margin: 0 auto 0 var(--space-1); }
   .sidenav { flex-direction: row; align-items: center; gap: var(--space-1); flex-wrap: nowrap; }
   .sidenav__item { padding: var(--space-2) var(--space-3); border-radius: var(--radius-pill); }
-  .sidenav__item.is-soon { display: none; }   /* 仮メニューは畳んだバーから外す */
-  .sidebar__cloud { display: none; }
+  .sidebar__divider, .streak, .sidebar__cloud { display: none; }  /* 畳んだバーには出さない */
+  .app-shell > .page-wrap { padding: var(--space-5) var(--space-5) var(--space-7); }
 
   .learn { grid-template-columns: minmax(0, 1fr); }
   .chapter-nav { display: none; }
@@ -777,21 +826,22 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
     border-radius: var(--radius-lg); padding: var(--space-2); box-shadow: var(--shadow-sm); }
 }
 @media (max-width: 640px) {
-  .app-shell { padding: var(--space-3) var(--space-4) 0; }
-  .sidebar { padding: var(--space-2) var(--space-3); }
+  .sidebar__inner { padding: var(--space-2) var(--space-3); }
   .sidebar__logo .logo__name { display: none; }   /* 狭いバーはロゴマークのみ */
   .sidenav__label { display: none; }              /* ホーム/復習はアイコンのみ */
   .sidenav__item { padding: var(--space-2); }
   /* 件数バッジは小さく残す（アイコン横の小ピル） */
   .sidenav__count { position: relative; }
+  .app-shell > .page-wrap { padding: var(--space-5) var(--space-4) var(--space-6); }
   .content-card, .quiz { padding: var(--space-5); }
-  .view { padding: var(--space-6) 0; }
   .course-grid { grid-template-columns: 1fr; }
-  .course-hero, .hero { padding: var(--space-5); }
+  .course-hero { padding: var(--space-5); }
   .page-foot { flex-direction: column-reverse; align-items: stretch; }
   .page-foot .btn, .page-foot .read-toggle { width: 100%; }
-  .hero { gap: var(--space-4); }
-  .progress-pill { width: 100%; }
+  /* 上部バーは縦積み：おかえり！の下に進捗カード＋アバターを横並びで。 */
+  .topbar { gap: var(--space-4); margin-bottom: var(--space-6); }
+  .topbar__right { width: 100%; }
+  .progress-pill { flex: 1; min-width: 0; }
   .chapter-card { flex-wrap: wrap; }
   .chapter-card__side { width: 100%; justify-content: space-between; }
   :root { --fs-display: 28px; --fs-h1: 21px; --fs-h2: 17px; }

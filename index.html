@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="エンジニア1年生向け。git とターミナルの基本コマンドを、1ページ1コマンドの小さなステップでやさしく学べる学習サイトです。">
 <title>TermLearn — git &amp; ターミナル 学習チュートリアル</title>
-<link rel="stylesheet" href="styles.css?v=20260626c">
+<link rel="stylesheet" href="styles.css?v=20260626e">
 </head>
 <body>
 
 <!-- ===========================================================================
      背景の装飾レイヤー（雲＋キラキラ）。fixed・低不透明度・装飾なので aria-hidden。
-     コンテンツの可読性は死守（カードは白＝AA）。reduced-motion でアニメ停止。
+     コンテンツの可読性は死守（カードは白＝AA）。雲はメインカードの背面（z-index:0）に置き、
+     不透明度低めでテキストに被らないようにする。reduced-motion でアニメ停止。
      SVG は icons.js の Icon('cloud'/'spark'/'star4') を JS で流し込む（data-icon）。
      =========================================================================== -->
 <div class="bg-deco" aria-hidden="true">
@@ -26,54 +27,67 @@
 </div>
 
 <!-- ===========================================================================
-     アプリの骨格 = 左サイドバー + 右メイン の2カラム（参考画像のダッシュボード構成）。
-     ～960px ではサイドバーを上部のコンパクトバーに畳む（CSS のみ）。
+     アプリの骨格 = 左サイドバー（フルハイト・左端フラッシュ）+ 右メイン の2カラム。
+     参考画像のダッシュボード構成。app-shell は画面の高さいっぱい（min-height:100vh）を占め、
+     サイドバーは左端にぴったり付く白いフルハイトのレール（浮いた角丸カードにしない）。
+     右側に細い境界＋ごく淡い影。～960px ではサイドバーを上部のコンパクトバーに畳む（CSS のみ）。
      =========================================================================== -->
 <div class="app-shell">
 
-  <!-- ===== 左サイドバー（縦メニュー）。実在の遷移先＝ホーム/復習リストのみ機能。
-            ロードマップ/ブックマーク/設定は disabled の「近日」項目（押せないことを明示）。 ===== -->
+  <!-- ===== 左サイドバー（フルハイト・縦メニュー） =====
+            実遷移＝ホーム/復習リストのみ。ロードマップ/ブックマーク/設定は遷移しない
+            プレースホルダだが「見た目は同じ」。押せるのに何も起きないダミーリンクは不可なので、
+            role を持たせず aria-disabled + cursor:default で操作対象から外す（dead click 無反応）。 -->
   <aside class="sidebar" aria-label="サイドバー">
-    <a class="sidebar__logo logo" href="#/" aria-label="TermLearn ホームへ">
-      <span class="logo__mark" aria-hidden="true"></span>
-      <span class="logo__name">TermLearn</span>
-    </a>
-
-    <nav class="sidenav" aria-label="メインメニュー">
-      <a id="navHome" class="sidenav__item" href="#/">
-        <span class="sidenav__icon" aria-hidden="true" data-icon="home"></span>
-        <span class="sidenav__label">ホーム</span>
-      </a>
-      <a id="navReview" class="sidenav__item" href="#/review">
-        <span class="sidenav__icon" aria-hidden="true" data-icon="bookmark"></span>
-        <span class="sidenav__label">復習リスト</span>
-        <span id="reviewBadge" class="sidenav__count" style="display:none;"><span id="reviewCount">0</span></span>
+    <div class="sidebar__inner">
+      <a class="sidebar__logo logo" href="#/" aria-label="TermLearn ホームへ">
+        <span class="logo__mark" aria-hidden="true"></span>
+        <span class="logo__name">TermLearn</span>
       </a>
 
-      <!-- 仮メニュー（参考画像の見た目に寄せる装飾）。機能しないので disabled＝押せない。
-           「ダミーの押せるのに何も起きないリンク」は不可なので、必ず aria-disabled + tabindex=-1。 -->
-      <span class="sidenav__item is-soon" aria-disabled="true" role="link" tabindex="-1">
-        <span class="sidenav__icon" aria-hidden="true" data-icon="map"></span>
-        <span class="sidenav__label">学習ロードマップ</span>
-        <span class="sidenav__soon">近日</span>
-      </span>
-      <span class="sidenav__item is-soon" aria-disabled="true" role="link" tabindex="-1">
-        <span class="sidenav__icon" aria-hidden="true" data-icon="bookmark"></span>
-        <span class="sidenav__label">ブックマーク</span>
-        <span class="sidenav__soon">近日</span>
-      </span>
-      <span class="sidenav__item is-soon" aria-disabled="true" role="link" tabindex="-1">
-        <span class="sidenav__icon" aria-hidden="true" data-icon="settings"></span>
-        <span class="sidenav__label">設定</span>
-        <span class="sidenav__soon">近日</span>
-      </span>
-    </nav>
+      <nav class="sidenav" aria-label="メインメニュー">
+        <a id="navHome" class="sidenav__item" href="#/">
+          <span class="sidenav__icon" aria-hidden="true" data-icon="home"></span>
+          <span class="sidenav__label">ホーム</span>
+        </a>
+        <span class="sidenav__item is-soon" aria-disabled="true">
+          <span class="sidenav__icon" aria-hidden="true" data-icon="map"></span>
+          <span class="sidenav__label">学習ロードマップ</span>
+        </span>
+        <a id="navReview" class="sidenav__item" href="#/review">
+          <span class="sidenav__icon" aria-hidden="true" data-icon="list"></span>
+          <span class="sidenav__label">復習リスト</span>
+          <span id="reviewBadge" class="sidenav__count" style="display:none;"><span id="reviewCount">0</span></span>
+        </a>
+        <span class="sidenav__item is-soon" aria-disabled="true">
+          <span class="sidenav__icon" aria-hidden="true" data-icon="bookmark"></span>
+          <span class="sidenav__label">ブックマーク</span>
+        </span>
+        <span class="sidenav__item is-soon" aria-disabled="true">
+          <span class="sidenav__icon" aria-hidden="true" data-icon="settings"></span>
+          <span class="sidenav__label">設定</span>
+        </span>
+      </nav>
 
-    <!-- 下部のやわらかい雲イラスト（装飾）。PC のみ表示。 -->
-    <div class="sidebar__cloud" aria-hidden="true">
-      <span class="sidebar__cloud-spark" data-icon="spark"></span>
-      <span class="sidebar__cloud-img" data-icon="cloud"></span>
-      <span class="sidebar__cloud-img sidebar__cloud-img--2" data-icon="cloud"></span>
+      <hr class="sidebar__divider" aria-hidden="true">
+
+      <!-- 学習の連続記録カード（炎＋小ラベル＋大きな日数）。値は固定 "7"（忠実再現）。 -->
+      <div class="streak" aria-label="学習の連続記録 7日連続">
+        <span class="streak__icon" aria-hidden="true" data-icon="flame"></span>
+        <div class="streak__body">
+          <div class="streak__label">学習の連続記録</div>
+          <div class="streak__value">7 <span class="streak__unit">日連続！</span></div>
+        </div>
+      </div>
+
+      <!-- 最下部のやわらかいパステル雲イラスト（ピンク＋ラベンダーの重なり雲・装飾）。
+           margin-top:auto で押し下げ、はみ出しは sidebar の overflow:hidden で切る。
+           メニュー/連続記録カードに絶対に被らないよう最下部に収める。PC のみ表示。 -->
+      <div class="sidebar__cloud" aria-hidden="true">
+        <span class="sidebar__cloud-spark" data-icon="spark"></span>
+        <span class="sidebar__cloud-img sidebar__cloud-img--lav" data-icon="cloud"></span>
+        <span class="sidebar__cloud-img sidebar__cloud-img--pink" data-icon="cloud"></span>
+      </div>
     </div>
   </aside>
 
@@ -98,17 +112,17 @@
     → file:// で開いたときに CORS で読めなくなるため。
   各ファイルは window に登録して連携する。
 -->
-<script src="js/glossary.js?v=20260626c"></script>
-<script src="js/store.js?v=20260626c"></script>
-<script src="js/icons.js?v=20260626c"></script>
-<script src="js/render.js?v=20260626c"></script>
+<script src="js/glossary.js?v=20260626e"></script>
+<script src="js/store.js?v=20260626e"></script>
+<script src="js/icons.js?v=20260626e"></script>
+<script src="js/render.js?v=20260626e"></script>
 <!-- コンテンツ（教材を増やすときはここに1行追加するだけ） -->
 <script>window.COURSES = window.COURSES || [];</script>
-<script src="content/terminal.js?v=20260626c"></script>
-<script src="content/git.js?v=20260626c"></script>
-<script src="content/coming-soon.js?v=20260626c"></script>
+<script src="content/terminal.js?v=20260626e"></script>
+<script src="content/git.js?v=20260626e"></script>
+<script src="content/coming-soon.js?v=20260626e"></script>
 <!-- ルーター（最後。COURSES が出そろってから起動） -->
-<script src="js/router.js?v=20260626c"></script>
+<script src="js/router.js?v=20260626e"></script>
 
 <!-- サイドバー/フッター/背景装飾の SVG・nav 現在地は、icons.js / store.js が出そろってから整える。
      復習件数(reviewBadge/reviewCount)は router.js が route 毎に updateReviewBadge() で最新化する。 -->
