@@ -1,0 +1,6 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code / ローカル開発用（公開サイトには不要）
+.claude/

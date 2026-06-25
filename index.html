@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="エンジニア1年生向け。git とターミナルの基本コマンドを、1ページ1コマンドの小さなステップでやさしく学べる学習サイトです。">
+<title>TermLearn — git &amp; ターミナル 学習チュートリアル</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===== App header（共通） ===== -->
+<header class="appbar">
+  <div class="page-wrap" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0;">
+    <a class="logo" href="#/" aria-label="TermLearn ホームへ">
+      <span class="logo__mark" aria-hidden="true">⌘</span>
+      <span>TermLearn</span>
+    </a>
+    <nav class="appbar__actions" aria-label="ユーティリティ">
+      <a class="appbar__meta" href="#/review" style="text-decoration:none;">
+        復習リスト<span id="reviewBadge" style="display:none;"> (<span id="reviewCount">0</span>)</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== アプリ描画先（ルーターがここに各画面を流し込む） ===== -->
+<main id="app" class="page-wrap" aria-live="polite">
+  <noscript>
+    <p style="padding:24px;">このサイトは JavaScript で動作します。お使いのブラウザで JavaScript を有効にしてください。</p>
+  </noscript>
+</main>
+
+<footer class="appfoot">
+  TermLearn — git &amp; ターミナル学習チュートリアル ・
+  <a href="https://github.com" rel="noopener">GitHub</a>
+</footer>
+
+<!--
+  スクリプトは「依存関係の順」で通常の <script> として読み込む。
+  ES Modules（import/export）は使わない:
+    → file:// で開いたときに CORS で読めなくなるため。
+  各ファイルは window に登録して連携する。
+-->
+<script src="js/glossary.js"></script>
+<script src="js/store.js"></script>
+<script src="js/render.js"></script>
+<!-- コンテンツ（教材を増やすときはここに1行追加するだけ） -->
+<script>window.COURSES = window.COURSES || [];</script>
+<script src="content/terminal.js"></script>
+<script src="content/git.js"></script>
+<script src="content/coming-soon.js"></script>
+<!-- ルーター（最後。COURSES が出そろってから起動） -->
+<script src="js/router.js"></script>
+
+<!-- ヘッダーの復習バッジは router 起動時に更新するが、初期表示も整えておく -->
+<script>
+  (function () {
+    try {
+      var badge = document.getElementById('reviewBadge');
+      var count = document.getElementById('reviewCount');
+      if (window.Store && badge && count) {
+        var n = window.Store.getReviews().length;
+        count.textContent = n;
+        badge.style.display = n > 0 ? '' : 'none';
+      }
+    } catch (e) {}
+  })();
+</script>
+</body>
+</html>
