@@ -59,38 +59,167 @@
     return -1;
   }
 
-  /* ---------- テーマ（教材ごとのパステル配色）----------
-     各教材に「テーマクラス」を割り当て、画面ルート要素に付与する。
-     styles.css の .theme-terminal / .theme-git / .theme-python が
-     --c-accent-course* トークンを上書きし、配下のコンポーネントが
-     var(--c-accent-course, var(--c-brand)) 経由でその色を拾う。
-
-     データ駆動で拡張可能:
-       - 既定は course.id をそのまま使い "theme-<id>"（例 terminal→theme-terminal）。
-       - course に theme（クラス名）または color（任意の識別子）を持たせれば、
-         id と別のテーマ名にもできる（content/*.js 側で指定）。
-       - 新しい教材を足すときは styles.css に .theme-<id> を1ブロック追加するだけ。
-         未定義のテーマでもフォールバックで brand（ローズ）になり崩れない。 */
-  function themeClass(course) {
-    if (!course) return '';
-    var name = course.theme || course.color || course.id;
-    return name ? ('theme-' + name) : '';
+  /* ---------- 画面ラッパ ----------
+     v3「ふんわりパステル」はサイト全体が単一のローズ世界観。
+     旧 v2 の per-course テーマ（themeClass / .theme-* / --c-accent-course*）は撤去した。
+     多色パステルは「章番号バッジの色循環」（装飾）でのみ表現する（教材には紐づけない）。 */
+  function sectionOpen(extra) {
+    return '<section class="view screen' + (extra ? ' ' + extra : '') + '">';
   }
-  // テーマクラスを付けた section の開きタグを返す（各 view 共通）。
-  function sectionOpen(course, extra) {
-    var cls = 'view screen';
-    var t = themeClass(course);
-    if (t) cls += ' ' + t;
-    if (extra) cls += ' ' + extra;
-    return '<section class="' + cls + '">';
+
+  /* ---------- 装飾・章コンポーネント（prototype を正に） ---------- */
+  // 番号バッジの色循環 cycle = (章index mod 5) + 1（6個目以降は先頭へ）
+  function badgeCycle(idx) { return (idx % 5) + 1; }
+  // 2桁ゼロ詰めの章番号表示（01, 02, …）
+  function chapterNo(idx) { var n = idx + 1; return n < 10 ? ('0' + n) : ('' + n); }
+
+  // 番号バッジ（角丸グラデ＋濃インク文字＋小 sparkle＋dot）。装飾は aria-hidden。
+  // sparkle は .num-badge__spark を併記して右上に絶対配置（位置 CSS はこのクラスが担う）。
+  function numBadge(idx) {
+    return '<div class="num-badge" data-cycle="' + badgeCycle(idx) + '">' + chapterNo(idx) +
+      Icon('spark', { class: 'num-badge__spark' }) +
+      '<span class="num-badge__dot"></span>' +
+    '</div>';
+  }
+
+  // 教材のタグライン（データ駆動。tagline 優先・無ければ description）。
+  function courseTagline(course) {
+    return course.tagline || course.description || '';
+  }
+
+  // 「続きから/はじめる」リンク先：進捗があれば最初の未読ページ、無ければ先頭ページ。
+  // 戻り値 {href, label}。総ページ0（準備中等）の場合は href=章一覧。
+  function resumeTarget(course) {
+    var firstPageHref = null;
+    var firstUnreadHref = null;
+    for (var c = 0; c < course.chapters.length; c++) {
+      var ch = course.chapters[c];
+      for (var p = 0; p < ch.pages.length; p++) {
+        var href = '#/page/' + course.id + '/' + ch.id + '/' + ch.pages[p].id;
+        if (firstPageHref === null) firstPageHref = href;
+        if (firstUnreadHref === null && !Store.isRead(course.id, ch.id, ch.pages[p].id)) {
+          firstUnreadHref = href;
+        }
+      }
+    }
+    var prog = Store.courseProgress(course);
+    var started = prog.done > 0;
+    // 続きから = 最初の未読。全部読了済みなら先頭から見直し。未着手なら先頭＝はじめる。
+    var href = started ? (firstUnreadHref || firstPageHref) : firstPageHref;
+    return {
+      href: href || ('#/course/' + course.id),
+      label: started ? '続きから' : 'はじめる'
+    };
+  }
+
+  /* ステップ進捗インジケーター（章を番号ノードで並べ、点線連結＋末尾 flag）。
+     完了=塗り＋check / 現在=塗り＋番号＋白アウトライン / 未完=白地枠。
+     「現在」= 最初の未読ページを含む章（無ければ最後の章＝全読了）。
+     role="img" ＋ 進捗を要約した aria-label（色だけに意味を載せない）。 */
+  function stepper(course) {
+    var chapters = course.chapters;
+    if (!chapters.length) return '';
+
+    // 各章の状態を判定: 'done'（全読了）/ 'todo'（未着手 or 途中）。
+    var states = chapters.map(function (ch) {
+      var p = Store.chapterProgress(course, ch);
+      return (p.total > 0 && p.done === p.total) ? 'done' : 'todo';
+    });
+    // 現在章 = 最初の「未読了」章。全て done なら現在なし（ゴール到達）。
+    var currentIdx = -1;
+    for (var i = 0; i < states.length; i++) { if (states[i] !== 'done') { currentIdx = i; break; } }
+
+    var doneCount = states.filter(function (s) { return s === 'done'; }).length;
+
+    var nodes = '';
+    for (var k = 0; k < chapters.length; k++) {
+      if (k > 0) {
+        // コネクタ: 直前ノードが到達済み（done/current）なら実線色
+        var reached = states[k - 1] === 'done' || (k - 1) === currentIdx;
+        nodes += '<span class="stepper__link' + (reached ? ' is-on' : '') + '"></span>';
+      }
+      if (states[k] === 'done') {
+        nodes += '<span class="stepper__node stepper__node--done">' + Icon('check') + '</span>';
+      } else if (k === currentIdx) {
+        nodes += '<span class="stepper__node stepper__node--current">' + (k + 1) + '</span>';
+      } else {
+        nodes += '<span class="stepper__node stepper__node--todo">' + (k + 1) + '</span>';
+      }
+    }
+    // 末尾 flag（全ノード到達済みなら点線も実線色に）
+    var allDone = doneCount === chapters.length;
+    nodes += '<span class="stepper__link' + (allDone ? ' is-on' : '') + '"></span>';
+    nodes += '<span class="stepper__flag" title="ゴール">' + Icon('flag') + '</span>';
+
+    // aria 要約（数で状態を言語化）
+    var label;
+    if (allDone) {
+      label = '全' + chapters.length + '章を修了、ゴール達成';
+    } else {
+      var cur = currentIdx >= 0 ? ('章' + (currentIdx + 1) + 'が現在') : '';
+      label = '全' + chapters.length + '章中 ' + doneCount + '章完了、' + cur + '。ゴールへ向けて学習中';
+    }
+    return '<div class="stepper" role="img" aria-label="' + R.esc(label) + '">' + nodes + '</div>';
+  }
+
+  /* 章カード（番号バッジ＋タイトル＋説明＋状態バッジ＋ページ数チップ＋丸矢印）。
+     カード全体を <a> にして 1 章の最初のページへ。状態でバッジ/右側表示を出し分ける。
+     opts.showPagesChip: ページ数チップを出すか（未読/学習中で出す。読了時は読了数を優先）。 */
+  function chapterCard(course, ch, idx) {
+    var p = Store.chapterProgress(course, ch);
+    var allRead = p.total > 0 && p.done === p.total;
+    var started = p.done > 0;
+    var summary = ch.summary || ch.pages.map(function (pg) { return pg.navTitle || pg.title; }).join(' / ');
+    var meta = R.esc(summary) + ' ・ 全' + ch.pages.length + 'ページ';
+
+    // 状態バッジ（色だけでなくアイコン/テキスト併記）
+    var badge, sub;
+    if (allRead) {
+      badge = '<span class="badge badge--done">' + Icon('check') + ' 読了</span>';
+      sub = '<span class="progress__label" style="color:var(--c-success);">' + p.done + '/' + p.total + ' 読了</span>';
+    } else if (started) {
+      badge = '<span class="badge badge--new">学習中 ' + p.done + '/' + p.total + '</span>';
+      sub = '<span class="chip-pages">' + Icon('doc') + ' ' + ch.pages.length + 'ページ</span>';
+    } else {
+      badge = '<span class="badge badge--todo">未読</span>';
+      sub = '<span class="chip-pages">' + Icon('doc') + ' ' + ch.pages.length + 'ページ</span>';
+    }
+
+    var href = '#/page/' + course.id + '/' + ch.id + '/' + ch.pages[0].id;
+    var card =
+      '<a class="chapter-card" href="' + href + '" aria-label="' + R.esc(ch.title) + ' を開く">' +
+        numBadge(idx) +
+        '<div class="chapter-card__body">' +
+          '<div class="chapter-card__title">' + R.esc(ch.title) + '</div>' +
+          '<div class="chapter-card__meta">' + meta + '</div>' +
+        '</div>' +
+        '<div class="chapter-card__side">' +
+          '<div class="chapter-card__metawrap">' + badge + sub + '</div>' +
+          '<span class="arrow-btn" aria-hidden="true">' + Icon('arrow-right') + '</span>' +
+        '</div>' +
+      '</a>';
+
+    // テスト導線（全ページ読了で活性、それ以外は無効＋理由表示）。章カードの下にぶら下げる。
+    var quizLink = '';
+    if (ch.quiz && ch.quiz.length) {
+      if (allRead) {
+        quizLink = '<a class="btn btn--ghost btn--sm chapter-quiz-link" href="#/quiz/' + course.id + '/' + ch.id + '">' +
+          Icon('doc') + ' 章' + (idx + 1) + ' テストを受ける（全' + ch.quiz.length + '問）</a>';
+      } else {
+        quizLink = '<button class="btn btn--ghost btn--sm chapter-quiz-link" disabled aria-disabled="true">' +
+          Icon('lock', { title: 'ロック中' }) + ' テストは全ページ読了で受けられます</button>';
+      }
+    }
+    return card + quizLink;
   }
 
   /* ---------- 共通パーツ ---------- */
   function breadcrumb(items) {
-    // items: [{label, href?}] 最後は現在地
+    // items: [{label, href?, icon?}] 最後は現在地。icon があれば先頭にアイコン（装飾）。
     var html = items.map(function (it, i) {
       var sep = i > 0 ? '<span class="breadcrumb__sep" aria-hidden="true">›</span>' : '';
-      if (it.href) return sep + '<a href="' + it.href + '">' + R.esc(it.label) + '</a>';
+      var ic = it.icon ? (Icon(it.icon) + ' ') : '';
+      if (it.href) return sep + '<a href="' + it.href + '">' + ic + R.esc(it.label) + '</a>';
       return sep + '<span aria-current="page">' + R.esc(it.label) + '</span>';
     }).join('');
     return '<nav class="breadcrumb" aria-label="現在地">' + html + '</nav>';
@@ -104,53 +233,127 @@
   /* =======================================================================
      ① TOP（教材選択）
      ======================================================================= */
-  function viewTop() {
-    var cards = COURSES.map(function (course) {
-      // 各カードに自分の教材テーマを付与（TOPで水色/ピンク/黄色が同時に並ぶ）。
-      var theme = themeClass(course);
-      if (course.comingSoon) {
-        // 準備中カードは淡色トーンが主役だが、ロゴタイルにはテーマ色を残して
-        // 「この教材は黄色」など個性が伝わるようにする（--soon 側で彩度は控えめに）。
-        return '' +
-          '<article class="course-card course-card--soon' + (theme ? ' ' + theme : '') + '" aria-disabled="true">' +
-            '<div class="course-card__emoji" aria-hidden="true">' + Icon(course.icon, { size: 30 }) + '</div>' +
-            '<h2 class="course-card__title">' + R.esc(course.title) + '</h2>' +
-            '<p class="course-card__desc">' + R.esc(course.description) + '</p>' +
-            '<div class="course-card__foot">' +
-              '<span class="badge badge--todo">準備中</span>' +
-              '<button class="btn btn--ghost btn--sm" disabled>近日公開</button>' +
-            '</div>' +
-          '</article>';
-      }
-      var prog = Store.courseProgress(course);
-      var started = prog.done > 0;
-      var done = prog.done === prog.total && prog.total > 0;
-      var badge = done
-        ? '<span class="badge badge--done">' + Icon('check') + '全ページ読了</span>'
-        : (started
-            ? '<span class="badge badge--new">学習中</span>'
-            : '<span class="badge badge--new">はじめる前</span>');
-      var btnLabel = started ? '続きから' : 'はじめる';
-      return '' +
-        '<article class="course-card' + (theme ? ' ' + theme : '') + '">' +
-          '<div class="course-card__emoji" aria-hidden="true">' + Icon(course.icon, { size: 30 }) + '</div>' +
-          '<h2 class="course-card__title">' + R.esc(course.title) + '</h2>' +
-          '<p class="course-card__desc">' + R.inline(course.description) + '</p>' +
-          R.progress(prog.done, prog.total) +
-          '<div class="course-card__foot">' +
-            badge +
-            '<a class="btn btn--primary btn--sm" href="#/course/' + course.id + '">' + btnLabel + ' ' + Icon('arrow-right') + '</a>' +
-          '</div>' +
-        '</article>';
+  // サイト全体の進捗％（全教材合計の 読了ページ数 / 総ページ数）。準備中は総数0で寄与しない。
+  function overallProgress() {
+    var done = 0, total = 0;
+    for (var i = 0; i < COURSES.length; i++) {
+      if (COURSES[i].comingSoon) continue;
+      var p = Store.courseProgress(COURSES[i]);
+      done += p.done; total += p.total;
+    }
+    return { done: done, total: total, pct: R.pct(done, total) };
+  }
+
+  // TOP 主役に出す「続きから」の教材を選ぶ：進捗のある教材があればその先頭、無ければ最初の公開教材。
+  function pickPrimaryCourse() {
+    var firstAvailable = null;
+    for (var i = 0; i < COURSES.length; i++) {
+      var c = COURSES[i];
+      if (c.comingSoon || !c.chapters.length) continue;
+      if (firstAvailable === null) firstAvailable = c;
+      if (Store.courseProgress(c).done > 0) return c; // 進捗あり＝続きから
+    }
+    return firstAvailable;
+  }
+
+  // コース主役カード（ロゴタイル＋タイトル＋タグライン＋ステップ＋CTA、下に章カード縦リスト）
+  function courseHeroTop(course) {
+    var t = resumeTarget(course);
+    var chapterCards = course.chapters.map(function (ch, idx) {
+      return chapterCard(course, ch, idx);
     }).join('');
 
-    setHTML(
-      '<section class="view screen">' +
-        '<div class="lead">' +
-          '<h1>何から学びますか？</h1>' +
-          '<p>エンジニアの第一歩、ターミナルと Git。<br>1ページ1コマンドの小さなステップで、怖がらずに進めます。</p>' +
+    return '' +
+      '<article class="course-hero" aria-labelledby="course-hero-title">' +
+        '<div class="course-hero__top">' +
+          '<div class="course-hero__logo">' + Icon(course.icon, { size: 42 }) +
+            Icon('spark', { class: 'course-hero__logo-spark' }) +
+          '</div>' +
+          '<div class="course-hero__head">' +
+            '<div id="course-hero-title" class="course-hero__title">' + R.esc(course.title) + ' ' +
+              Icon('star4', { class: 'spark' }) + '</div>' +
+            '<p class="course-hero__tag">' + R.esc(courseTagline(course)) + '</p>' +
+            stepper(course) +
+          '</div>' +
+          '<a class="btn btn--primary course-hero__cta" href="' + t.href + '">' + t.label + ' ' + Icon('arrow-right') + '</a>' +
         '</div>' +
-        '<div class="course-grid">' + cards + '</div>' +
+        '<div class="chapter-list">' + chapterCards + '</div>' +
+      '</article>';
+  }
+
+  // ほかの教材（小カード）。進捗があれば「続きから」、未着手は「はじめる」、準備中は淡色。
+  function miniCard(course) {
+    if (course.comingSoon) {
+      return '' +
+        '<article class="mini-card mini-card--soon" aria-disabled="true">' +
+          '<div class="mini-card__logo" aria-hidden="true">' + Icon(course.icon, { size: 30 }) + '</div>' +
+          '<h3 class="mini-card__title">' + R.esc(course.title) + '</h3>' +
+          '<p class="mini-card__desc">' + R.inline(course.description) + '</p>' +
+          '<div class="mini-card__foot">' +
+            '<span class="badge badge--todo">準備中</span>' +
+            '<button class="btn btn--ghost btn--sm" disabled>近日公開</button>' +
+          '</div>' +
+        '</article>';
+    }
+    var prog = Store.courseProgress(course);
+    var done = prog.total > 0 && prog.done === prog.total;
+    var started = prog.done > 0;
+    var badge = done
+      ? '<span class="badge badge--done">' + Icon('check') + ' 全ページ読了</span>'
+      : (started
+          ? '<span class="badge badge--new">学習中 ' + prog.done + '/' + prog.total + '</span>'
+          : '<span class="badge badge--new">はじめる前</span>');
+    var t = resumeTarget(course);
+    return '' +
+      '<article class="mini-card">' +
+        '<div class="mini-card__logo" aria-hidden="true">' + Icon(course.icon, { size: 30 }) + '</div>' +
+        '<h3 class="mini-card__title">' + R.esc(course.title) + '</h3>' +
+        '<p class="mini-card__desc">' + R.inline(course.description) + '</p>' +
+        '<div class="mini-card__foot">' +
+          badge +
+          '<a class="btn btn--ghost btn--sm" href="' + t.href + '">' + t.label + ' ' + Icon('arrow-right') + '</a>' +
+        '</div>' +
+      '</article>';
+  }
+
+  function viewTop() {
+    var op = overallProgress();
+    var primary = pickPrimaryCourse();
+
+    // ヒーロー（おかえり！＋進捗ピル）。👋 は使わず sparkle（SVG）で。
+    var hero =
+      '<div class="hero">' +
+        Icon('cloud', { class: 'hero__cloud' }) +
+        Icon('cloud', { class: 'hero__cloud hero__cloud--2' }) +
+        '<div class="hero__copy">' +
+          '<h1 class="hero__title">おかえり！' + Icon('spark', { class: 'spark spark--anim' }) + '</h1>' +
+          '<p class="hero__sub">さあ、今日も一歩ずつ進んでいこう。</p>' +
+        '</div>' +
+        '<div class="progress-pill" role="group" aria-label="現在の進捗 ' + op.pct + 'パーセント（全教材 ' + op.done + '／' + op.total + ' ページ）">' +
+          '<span class="progress-pill__icon" aria-hidden="true">' + Icon('spark') + '</span>' +
+          '<div class="progress-pill__body">' +
+            '<div class="progress-pill__label">現在の進捗</div>' +
+            '<div class="progress-pill__pct">' + op.pct + '%</div>' +
+            '<div class="progress__track"><div class="progress__fill" style="width:' + op.pct + '%"></div></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    // 主役のコースカード
+    var primaryHtml = primary ? courseHeroTop(primary) : '';
+
+    // ほかの教材（主役以外の公開教材＋準備中）。主役が無い場合は全件をミニカードに。
+    var others = COURSES.filter(function (c) { return c !== primary; });
+    var othersHtml = others.length
+      ? '<h2 class="section-title">' + Icon('star4', { class: 'spark' }) + ' ほかの教材</h2>' +
+        '<div class="course-grid">' + others.map(miniCard).join('') + '</div>'
+      : '';
+
+    setHTML(
+      sectionOpen() +
+        hero +
+        primaryHtml +
+        othersHtml +
       '</section>'
     );
   }
@@ -165,58 +368,36 @@
     var cprog = Store.courseProgress(course);
 
     var chapters = course.chapters.map(function (ch, idx) {
-      var p = Store.chapterProgress(course, ch);
-      var allRead = p.done === p.total && p.total > 0;
-      var summary = ch.summary || ch.pages.map(function (pg) { return pg.navTitle || pg.title; }).join(' / ');
-
-      var side;
-      if (allRead) {
-        side = '<span class="badge badge--achievement">' + Icon('award') + 'クリア！</span>' +
-               '<span class="progress__label" style="color:var(--c-success);">' + p.done + '/' + p.total + ' 読了</span>';
-      } else if (p.done > 0) {
-        side = '<span class="progress__label">' + p.done + '/' + p.total + ' 読了</span>' +
-               '<span class="chapter-card__arrow" aria-hidden="true">' + Icon('arrow-right') + '</span>';
-      } else {
-        side = '<span class="progress__label" style="color:var(--c-text-faint);">未読</span>' +
-               '<span class="chapter-card__arrow" aria-hidden="true">' + Icon('arrow-right') + '</span>';
-      }
-
-      var firstPageHref = '#/page/' + course.id + '/' + ch.id + '/' + ch.pages[0].id;
-      var card =
-        '<a class="chapter-card" href="' + firstPageHref + '">' +
-          '<div class="chapter-card__num">' + (idx + 1) + '</div>' +
-          '<div class="chapter-card__body">' +
-            '<div class="chapter-card__title">' + R.esc(ch.title) + '</div>' +
-            '<div class="chapter-card__meta">' + R.esc(summary) + ' ・ 全' + ch.pages.length + 'ページ</div>' +
-          '</div>' +
-          '<div class="chapter-card__side">' + side + '</div>' +
-        '</a>';
-
-      // テスト導線（全ページ読了で活性、それ以外は無効＋理由表示）
-      var quizLink = '';
-      if (ch.quiz && ch.quiz.length) {
-        if (allRead) {
-          quizLink = '<a class="btn btn--ghost btn--sm chapter-quiz-link" href="#/quiz/' + course.id + '/' + ch.id + '">' +
-            Icon('doc') + ' 章' + (idx + 1) + ' テストを受ける（全' + ch.quiz.length + '問）</a>';
-        } else {
-          quizLink = '<button class="btn btn--ghost btn--sm chapter-quiz-link" disabled aria-disabled="true">' +
-            Icon('lock', { title: 'ロック中' }) + ' テストは全ページ読了で受けられます</button>';
-        }
-      }
-      return card + quizLink;
+      return chapterCard(course, ch, idx);
     }).join('');
 
+    // 進捗バー（教材全体の 読了/総ページ）。ステップは番号ノードで別途。
+    var progressBar = R.progress(cprog.done, cprog.total, {
+      label: cprog.done + '/' + cprog.total + ' 読了',
+      style: 'max-width:360px;margin-top:var(--space-3);'
+    });
+
     setHTML(
-      sectionOpen(course) +
+      sectionOpen() +
         breadcrumb([
-          { label: '教材', href: '#/' },
+          { label: '教材', href: '#/', icon: 'home' },
           { label: course.title }
         ]) +
-        '<div class="section-head">' +
-          '<h1 class="section-head__title with-icon">' + Icon(course.icon, { size: 24 }) + R.esc(course.title) + '</h1>' +
-          R.progress(cprog.done, cprog.total, { label: cprog.done + '/' + cprog.total + ' 読了' }) +
-        '</div>' +
-        '<div class="chapter-list">' + chapters + '</div>' +
+        '<article class="course-hero" aria-labelledby="course-hero-title">' +
+          '<div class="course-hero__top">' +
+            '<div class="course-hero__logo">' + Icon(course.icon, { size: 42 }) +
+              Icon('spark', { class: 'course-hero__logo-spark' }) +
+            '</div>' +
+            '<div class="course-hero__head">' +
+              '<h1 id="course-hero-title" class="course-hero__title">' + R.esc(course.title) + ' ' +
+                Icon('star4', { class: 'spark' }) + '</h1>' +
+              '<p class="course-hero__tag">' + R.esc(courseTagline(course)) + '</p>' +
+              stepper(course) +
+              progressBar +
+            '</div>' +
+          '</div>' +
+          '<div class="chapter-list">' + chapters + '</div>' +
+        '</article>' +
       '</section>'
     );
   }
@@ -304,9 +485,9 @@
     var navList = chapterNavList(course, chapter, page.id);
 
     setHTML(
-      sectionOpen(course).replace('>', ' style="padding-top:var(--space-5);">') +
+      sectionOpen('view--page') +
         breadcrumb([
-          { label: course.title, href: '#/course/' + course.id },
+          { label: course.title, href: '#/course/' + course.id, icon: course.icon },
           { label: '章' + chapterNum + ' ' + chapter.title, href: '#/page/' + course.id + '/' + chapter.id + '/' + chapter.pages[0].id },
           { label: page.navTitle || page.title }
         ]) +
@@ -400,9 +581,9 @@
     var state = { quiz: buildQuiz(), i: 0, correct: 0, answered: false };
 
     function shell(inner) {
-      return sectionOpen(course) +
+      return sectionOpen() +
         breadcrumb([
-          { label: course.title, href: '#/course/' + course.id },
+          { label: course.title, href: '#/course/' + course.id, icon: course.icon },
           { label: chapter.title, href: '#/page/' + course.id + '/' + chapter.id + '/' + chapter.pages[0].id },
           { label: '章' + chapterNum + ' テスト' }
         ]) + inner + '</section>';
@@ -499,7 +680,7 @@
         : (good ? 'よくできました！あと少しで完璧です。'
                 : '間違えたところは復習リストにまとめました。もう一度読んで再チャレンジしましょう。');
       var achievement = perfect
-        ? '<div style="margin-bottom:var(--space-4);"><span class="badge badge--achievement">' + Icon('award') + '章' + chapterNum + ' 全問正解！</span></div>'
+        ? '<div style="margin-bottom:var(--space-4);"><span class="badge badge--achieve">' + Icon('trophy') + ' 章' + chapterNum + ' 全問正解！</span></div>'
         : '';
 
       var reviewCount = Store.getReviews().length;
@@ -509,7 +690,7 @@
 
       setHTML(shell(
         '<div class="quiz-result">' +
-          '<div class="quiz-result__emoji" aria-hidden="true">' + resultIcon + '</div>' +
+          '<div class="quiz-result__icon" aria-hidden="true">' + resultIcon + '</div>' +
           achievement +
           '<div class="quiz-result__score">正解 <b>' + score + '</b> / ' + total + '</div>' +
           '<p class="quiz-result__msg">' + msg + '</p>' +
@@ -540,10 +721,13 @@
 
     var body;
     if (!reviews.length) {
+      // 空状態 = 祝福。トロフィー＋sparkle 装飾（要所のきらめき）。色だけに頼らずテキストで案内。
       body =
         '<div class="review-empty">' +
-          '<div class="review-empty__emoji" aria-hidden="true">' + Icon('sparkles') + '</div>' +
-          '<p style="font-weight:700;color:var(--c-text);margin-top:var(--space-2);">復習リストは空っぽです！</p>' +
+          Icon('spark', { class: 'deco spark spark--anim review-empty__spark1' }) +
+          Icon('star4', { class: 'deco spark review-empty__spark2' }) +
+          '<div class="review-empty__icon" aria-hidden="true">' + Icon('trophy') + '</div>' +
+          '<p class="review-empty__title">復習リストは空っぽです！</p>' +
           '<p>苦手はぜんぶ克服しました。この調子でどんどん進みましょう。</p>' +
         '</div>';
     } else {
@@ -568,7 +752,7 @@
           '<div class="review-card">' +
             '<span class="review-card__icon" aria-hidden="true">' + Icon(iconName) + '</span>' +
             '<div class="review-card__body">' +
-              '<span class="review-card__tag">' + Icon('flag') + '要復習</span>' +
+              '<span class="review-card__tag">' + Icon('flag') + ' 要復習</span>' +
               '<div class="review-card__topic">' + R.esc(r.topic) + '</div>' +
               '<div class="review-card__src">' + R.esc(src) + '</div>' +
             '</div>' +
@@ -578,18 +762,22 @@
       body = '<div class="review-list">' + cards + '</div>';
     }
 
+    var countBadge = reviews.length
+      ? '<span class="badge badge--new">' + reviews.length + ' 件</span>'
+      : '';
+
     setHTML(
-      '<section class="view screen">' +
+      sectionOpen() +
         breadcrumb([
-          { label: '教材', href: '#/' },
+          { label: 'ホーム', href: '#/', icon: 'home' },
           { label: '復習リスト' }
         ]) +
-        '<div style="display:flex;align-items:baseline;gap:var(--space-3);margin-bottom:var(--space-2);">' +
-          '<h1 class="section-head__title">復習リスト</h1>' +
-          '<span class="progress__label">' + reviews.length + ' 件</span>' +
+        '<div class="review-head">' +
+          '<h1>' + Icon('spark', { class: 'spark' }) + ' 復習リスト</h1>' +
+          countBadge +
         '</div>' +
-        '<p class="muted" style="font-size:var(--fs-sm);margin-bottom:var(--space-5);max-width:680px;">' +
-          'テストで間違えた=まだ自信がないトピックです。もう一度読んで、テストに再チャレンジしましょう。' +
+        '<p class="review-intro">' +
+          'テストで間違えた＝まだ自信がないトピックです。もう一度読んで、テストに再チャレンジしましょう。' +
         '</p>' +
         body +
       '</section>'
@@ -599,10 +787,10 @@
   /* ---------- Not Found ---------- */
   function viewNotFound() {
     setHTML(
-      '<section class="view screen">' +
+      sectionOpen() +
         '<div class="review-empty">' +
-          '<div class="review-empty__emoji" aria-hidden="true">' + Icon('compass') + '</div>' +
-          '<p style="font-weight:700;color:var(--c-text);margin-top:var(--space-2);">ページが見つかりませんでした</p>' +
+          '<div class="review-empty__icon" aria-hidden="true">' + Icon('compass') + '</div>' +
+          '<p class="review-empty__title">ページが見つかりませんでした</p>' +
           '<p>URL が変わったか、まだ準備中のページかもしれません。</p>' +
           '<p style="margin-top:var(--space-4);"><a class="btn btn--primary" href="#/">教材選択へ戻る</a></p>' +
         '</div>' +

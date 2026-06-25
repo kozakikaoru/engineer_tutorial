@@ -4,3 +4,6 @@ Thumbs.db
 
 # Claude Code / ローカル開発用（公開サイトには不要）
 .claude/
+
+# v2 バックアップ（刷新前のスナップショット。公開不要）
+.backup-v2/

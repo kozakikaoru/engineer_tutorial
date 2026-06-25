@@ -45,6 +45,12 @@
      arrow-left  (←)   前へ / 戻る
      sparkles    (✨)  お祝い / 空状態（復習なし）の上品演出
      compass     (🧭)  空状態（まだ復習がない／探索の示唆）
+     home        (⌂)   ホーム/教材選択（ヘッダー nav・パンくず）
+
+   装飾モチーフ（ふんわりパステル v3。意味を持たない＝既定 aria-hidden）:
+     spark       (✦)   ぷっくり4方向星。きらめき装飾（ヒーロー/バッジ/見出し脇）
+     star4       (✧)   細い小さな4点星。タイトル脇の控えめ装飾
+     cloud       (☁)   ふわふわ雲。ヒーロー隅のうっすら装飾（横長 viewBox）
    ─────────────────────────────────────────────────────────────────────────
    ========================================================================= */
 (function () {
@@ -55,6 +61,19 @@
   // body: <svg> の中身。currentColor で色を継承する。
 
   var ICONS = {
+    /* ===== 装飾モチーフ（ふんわりパステル v3。emoji 禁止の受け皿） =====
+       prototype.html の <symbol id="i-spark/star4/cloud"> を移植（fill=currentColor）。
+       既定で aria-hidden（装飾）。文脈の色（ピンク/白/インク等）に染まる。 */
+    // 4方向にとがった“ぷっくり星”（sparkle）。要所のきらめき装飾。viewBox 24
+    spark: { kind: 'logo', body:
+      '<path fill="currentColor" d="M12 1.6c.5 3.9 1.9 6.0 4.4 7.1 2.4 1.0 3.9 1.5 6.0 1.7-3.9.5-6.0 1.9-7.1 4.4-1.0 2.4-1.5 4.0-1.7 6.0-.5-3.9-1.9-6.0-4.4-7.1C6.8 12.7 5.3 12.2 3.2 12c3.9-.5 6.0-1.9 7.1-4.4C11.3 5.2 11.8 3.7 12 1.6Z"/>' },
+    // 小さな星（4点・細）。タイトル脇の小装飾。viewBox 24
+    star4: { kind: 'logo', body:
+      '<path fill="currentColor" d="M12 3c.4 3 1.2 4.5 3.3 5.4 1.6.7 2.9 1.1 4.7 1.6-1.8.5-3.1.9-4.7 1.6C13.2 12.5 12.4 14 12 17c-.4-3-1.2-4.5-3.3-5.4C7.1 11 5.8 10.6 4 10c1.8-.5 3.1-.9 4.7-1.6C10.8 7.5 11.6 6 12 3Z"/>' },
+    // ふわふわ雲（ヒーロー隅のうっすら装飾）。横長 viewBox（個別指定）
+    cloud: { kind: 'logo', viewBox: '0 0 120 80', body:
+      '<path fill="currentColor" d="M30 64c-13 0-23-9-23-21 0-11 8-19 19-20 3-11 13-19 25-19 13 0 24 9 26 22 9 1 16 8 16 18 0 11-9 20-21 20H30Z"/>' },
+
     /* ===== ロゴ（公式 / Simple Icons パス, fill=currentColor） ===== */
     // Git 公式ロゴ
     git: { kind: 'logo', body:
@@ -94,6 +113,8 @@
       '<path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1z"/>' },
     flag: { kind: 'stroke', body:
       '<path d="M6 21V4"/><path d="M6 4h11l-2 3.5L17 11H6"/>' },
+    home: { kind: 'stroke', body:
+      '<path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/>' },
     'arrow-right': { kind: 'stroke', body:
       '<path d="M4 12h15"/><path d="m13 6 6 6-6 6"/>' },
     'arrow-left': { kind: 'stroke', body:
@@ -152,8 +173,11 @@
       ? ' fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'
       : ' fill="currentColor"';
 
+    // viewBox は既定 24x24。装飾 cloud のように横長のものは def.viewBox で個別指定。
+    var viewBox = def.viewBox || '0 0 24 24';
+
     return (
-      '<svg class="' + cls + '" viewBox="0 0 24 24" width="' + size + '" height="' + size + '"' +
+      '<svg class="' + cls + '" viewBox="' + viewBox + '" width="' + size + '" height="' + size + '"' +
       commonStroke + a11y + '>' + titleEl + def.body + '</svg>'
     );
   }

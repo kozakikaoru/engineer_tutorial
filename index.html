@@ -9,19 +9,19 @@
 </head>
 <body>
 
-<!-- ===== App header（共通） ===== -->
+<!-- ===== App header（共通。浮遊 pill。実在の遷移先のみ：ホーム / 復習リスト） ===== -->
 <header class="appbar">
-  <div class="page-wrap" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0;">
-    <a class="logo" href="#/" aria-label="TermLearn ホームへ">
-      <span class="logo__mark" aria-hidden="true"></span>
-      <span>TermLearn</span>
+  <a class="logo" href="#/" aria-label="TermLearn ホームへ">
+    <span class="logo__mark" aria-hidden="true"></span>
+    <span>TermLearn</span>
+  </a>
+  <nav class="appnav" aria-label="メイン">
+    <a id="navHome" href="#/"><span aria-hidden="true" data-icon="home"></span><span>ホーム</span></a>
+    <a id="navReview" href="#/review">
+      <span aria-hidden="true" data-icon="bookmark"></span>
+      <span>復習リスト<span id="reviewBadge" style="display:none;"> (<span id="reviewCount" class="appnav__count">0</span>)</span></span>
     </a>
-    <nav class="appbar__actions" aria-label="ユーティリティ">
-      <a class="appbar__meta" href="#/review" style="text-decoration:none;">
-        復習リスト<span id="reviewBadge" style="display:none;"> (<span id="reviewCount">0</span>)</span>
-      </a>
-    </nav>
-  </div>
+  </nav>
 </header>
 
 <!-- ===== アプリ描画先（ルーターがここに各画面を流し込む） ===== -->
@@ -32,6 +32,7 @@
 </main>
 
 <footer class="appfoot">
+  <span class="appfoot__logo" aria-hidden="true" data-icon="github"></span>
   TermLearn — git &amp; ターミナル学習チュートリアル ・
   <a href="https://github.com" rel="noopener">GitHub</a>
 </footer>
@@ -54,23 +55,42 @@
 <!-- ルーター（最後。COURSES が出そろってから起動） -->
 <script src="js/router.js"></script>
 
-<!-- ヘッダーのロゴマークと復習バッジは、icons.js / store.js が出そろってから整える -->
+<!-- ヘッダー/フッターの装飾アイコン・nav 現在地は、icons.js / store.js が出そろってから整える。
+     復習件数(reviewBadge/reviewCount)は router.js が route 毎に updateReviewBadge() で最新化する。 -->
 <script>
   (function () {
-    try {
+    function fillIcons() {
+      if (!window.Icon) return;
+      // data-icon="名前" の空スパンに SVG を流し込む（装飾＝aria-hidden は親に付与済み）。
+      var slots = document.querySelectorAll('[data-icon]');
+      for (var i = 0; i < slots.length; i++) {
+        var el = slots[i];
+        if (el.getAttribute('data-icon-done')) continue;
+        el.innerHTML = window.Icon(el.getAttribute('data-icon'));
+        el.setAttribute('data-icon-done', '1');
+      }
+    }
+    function fillLogoMark() {
       // ロゴマーク: 公式ロゴ路線。terminal アイコンを差し込む（装飾＝隣に "TermLearn" 表記あり）。
       var mark = document.querySelector('.logo__mark');
-      if (mark && window.Icon) mark.innerHTML = window.Icon('terminal');
-    } catch (e) {}
-    try {
-      var badge = document.getElementById('reviewBadge');
-      var count = document.getElementById('reviewCount');
-      if (window.Store && badge && count) {
-        var n = window.Store.getReviews().length;
-        count.textContent = n;
-        badge.style.display = n > 0 ? '' : 'none';
+      if (mark && window.Icon && !mark.getAttribute('data-icon-done')) {
+        mark.innerHTML = window.Icon('terminal');
+        mark.setAttribute('data-icon-done', '1');
       }
-    } catch (e) {}
+    }
+    // nav の現在地ハイライト（ホーム系か 復習リストか）。ダミーではなく実在の2遷移先のみ。
+    function updateNavCurrent() {
+      var h = (window.location.hash || '').replace(/^#/, '');
+      var isReview = (h.replace(/^\//, '').split('/')[0] === 'review');
+      var home = document.getElementById('navHome');
+      var review = document.getElementById('navReview');
+      if (home) { home.classList.toggle('is-current', !isReview); home.removeAttribute('aria-current'); if (!isReview) home.setAttribute('aria-current', 'page'); }
+      if (review) { review.classList.toggle('is-current', isReview); review.removeAttribute('aria-current'); if (isReview) review.setAttribute('aria-current', 'page'); }
+    }
+    try { fillLogoMark(); } catch (e) {}
+    try { fillIcons(); } catch (e) {}
+    try { updateNavCurrent(); } catch (e) {}
+    window.addEventListener('hashchange', function () { try { updateNavCurrent(); } catch (e) {} });
   })();
 </script>
 </body>

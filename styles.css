@@ -1,148 +1,108 @@
 /* =========================================================================
-   TermLearn デザインシステム — CSS カスタムプロパティ（source of truth）
-   design/prototype.html の <style> を切り出し、本実装用の追加分を末尾に足したもの。
-   変数・クラスは prototype と 1:1。
+   TermLearn デザインシステム v3 「ふんわりパステル」
+   ── source of truth = design/prototype.html ──
+   方針: モダンSaaSオンボーディング/Dribbble風。ぷっくり・丸い・やさしいパステル。
+         サイト全体で1つの世界観に統一（per-course テーマ色は廃止）。
+         多色パステルは「装飾」＝章番号バッジの色循環として散らす。
+   このファイルの :root / コンポーネントは prototype.html と 1:1。
    ========================================================================= */
 :root {
-  /* --- Brand / Accent（パステルピンク × ラベンダー。上品・やわらか） ---
-     CTA問題の解決方針:
-       純パステルピンク地に白文字は AA を満たせない（白 on #E... は ~3:1）。
-       そこで「面（背景・チップ・選択ナビ）はパステル、押せるCTAだけ少し濃いローズ」に役割分担する。
-       --c-brand 系（押せる色 / 文字色）は AA を満たす濃度に保ち、
-       --c-bg / --c-*-soft（地）はパステルで軽やかに、というコントラスト設計。
-     全組み合わせは AA 実測済み（contrast checker でログ確認、本文≥4.5:1 / ボタン文字≥4.5:1）。 */
-  --c-brand:        #B54579;  /* CTA・進捗・アクティブのローズ。白文字 5.13:1 ✅AA */
-  --c-brand-strong: #A83C6E;  /* ホバー/押下・テキストリンク・チップ文字。白文字 5.94:1 / 白地に文字 5.94:1 ✅AA */
-  --c-brand-soft:   #FCE4EF;  /* パステルピンクの面（チップ地・選択ナビ・バッジ地）。brand-strong文字 4.94:1 ✅AA */
-  --c-brand-bright: #BE4D85;  /* 主ボタンのグラデ明側ストップ。白文字 4.58:1 ✅AA（グラデ全域で白がAAを満たす濃さに留める） */
-  --c-accent:       #6D45C9;  /* 差し色ラベンダー。白地に文字 6.28:1 ✅AA（達成・要所のみ） */
-  --c-accent-strong:#5B36B0;  /* ラベンダー濃。accent-soft地に文字 6.85:1 ✅AA */
-  --c-accent-soft:  #F0E9FF;  /* パステルラベンダーの面（達成バッジ地など） */
+  /* === Brand（ピンク主役。CTA/現在地は AA を満たす濃度に保つ） ===
+     淡いパステル面に白文字は AA 不可（白 on パステル ≈ 2〜3:1）。
+     そこで「面・地はパステル、押せる/現在地のソリッドだけ少し濃いローズ」に役割分担。 */
+  --c-brand:        #D44C8C;  /* ピンク主役（進捗フィル明側・ホバー基準） */
+  --c-brand-deep:   #C23B7C;  /* CTA/現在ステップの“ソリッド地”。白文字 4.99:1 ✅AA */
+  --c-brand-strong: #A8336F;  /* テキストリンク/チップ文字。白地 6.24:1 / soft地 5.19:1 ✅AA */
+  --c-brand-soft:   #FCE4EF;  /* パステルピンクの面（チップ地・選択地・淡バッジ地） */
+  --c-brand-tint:   #FFF0F6;  /* さらに淡いピンク面（カード地グラデの明側・ヘッダー地） */
 
-  /* --- Semantic（パステル地でも文字側はAAを満たす濃度に調整） --- */
-  --c-success:      #0F7D52;  /* success-soft地に文字 4.59:1 / 白文字 5.15:1 ✅AA */
+  /* === 装飾アクセント（多色パステル。番号バッジ循環・sparkle のみで使う） ===
+     ※「教材ごとの色分け」ではない。サイト共通の装飾パレット。 */
+  --c-lav:          #8159D6;  /* ラベンダー（達成・一部装飾）。白地 5.6:1 ✅AA */
+  --c-lav-soft:     #F0E9FF;
+
+  /* === 章番号バッジ 5色循環（ぷっくりグラデ地 + 同系の“濃いインク”文字） ===
+     白文字は淡パステル地で AA 不可 → 文字は deep ink にして AA を確保（全色 4.5:1 以上 両ストップ実測）。
+     循環: 01→pink, 02→coral, 03→amber, 04→purple, 05→sky, 06以降は先頭へ。 */
+  --badge1-a:#FBB0D4; --badge1-b:#F791C2; --badge1-ink:#7E1B4C; /* pink/magenta  4.55:1 */
+  --badge2-a:#FCBEA2; --badge2-b:#FBA983; --badge2-ink:#7E2A09; /* coral/orange  5.00:1 */
+  --badge3-a:#F9D079; --badge3-b:#F6BE55; --badge3-ink:#6E4500; /* yellow/amber  4.94:1 */
+  --badge4-a:#C7AFF4; --badge4-b:#B398F0; --badge4-ink:#43237F; /* purple/violet 4.85:1 */
+  --badge5-a:#A6D4F2; --badge5-b:#86C2EC; --badge5-ink:#0B4E7E; /* blue/sky      4.55:1 */
+
+  /* === セマンティック（パステル地でも文字側は AA 濃度） === */
+  --c-success:      #0F7D52;  /* soft地 4.59:1 ✅AA */
   --c-success-soft: #E4F6EE;
-  --c-danger:       #C42F37;  /* danger-soft地に文字 4.76:1 / 白文字 5.51:1 ✅AA */
+  --c-danger:       #C42F37;  /* soft地 4.76:1 ✅AA */
   --c-danger-soft:  #FCEAEC;
-  --c-warning:      #B8860B;  /* 左バー等の装飾アクセント（地・線用） */
-  --c-warning-dark: #8A5A00;  /* 警告コールアウトの見出し文字。warning-soft地 5.27:1 ✅AA */
-  --c-warning-soft: #FBF1D8;
-  --c-info:         #2A6BAC;  /* info-soft地に文字 4.85:1 ✅AA */
+  --c-info:         #2A6BAC;  /* soft地 4.85:1 ✅AA（ヒント） */
   --c-info-soft:    #E8F1FB;
+  --c-warning-dark: #8A5A00;  /* warning-soft地 5.27:1 ✅AA（注意の見出し） */
+  --c-warning:      #B8860B;
+  --c-warning-soft: #FBF1D8;
 
-  /* --- Neutral（ほんのりピンクみのパステル地・上品な文字） --- */
-  --c-bg:           #FFF5F9;  /* ページ地（やわらかいパステルピンク。白っぽくなりすぎない） */
-  --c-surface:      #FFFFFF;
-  --c-surface-2:    #FBEAF2;  /* 一段沈めた面（無効ボタン地・インラインコード地・スケルトン） */
-  --c-text:         #3A2A38;  /* 本文（プラム寄りのダーク）。白地 13.4:1 ✅AAA */
-  --c-text-muted:   #7A6472;  /* 補助テキスト。白地 5.39:1 ✅AA */
-  --c-text-faint:   #9A7F92;  /* 弱い注釈・装飾アイコン。白地 3.61:1（装飾/大サイズ用） */
-  --c-border:       #F6D9E7;  /* 標準の境界線（パステル） */
-  --c-border-strong:#ECBBD3;  /* ホバー/強調境界 */
+  /* === ニュートラル（ほんのりピンクみのパステル地・プラム文字） === */
+  --c-bg:           #FFF5FA;  /* ページ地（やわらかいパステルピンク） */
+  --c-surface:      #FFFFFF;  /* カード白 */
+  --c-surface-2:    #FBEAF2;  /* 一段沈めた面（無効・コード地・スケルトン） */
+  --c-text:         #3A2A38;  /* 本文（ダークプラム）。白地 12.5:1 ✅AAA */
+  --c-text-muted:   #7A6472;  /* 補助。白地 5.39:1 ✅AA */
+  --c-text-faint:   #9A7F92;  /* 弱い注釈/装飾。白地 3.61:1（大/装飾用） */
+  --c-border:       #F6D9E7;  /* 標準境界（パステル） */
+  --c-border-strong:#ECBBD3;  /* 強調境界 */
 
-  /* --- Terminal（主役の濃色は維持。プロンプトはパステルローズに調和） --- */
-  --c-term-bg:      #241526;  /* プラム寄りの濃色（真っ黒より柔らかい） */
+  /* === ターミナル（主役の濃色は維持。プラム寄りでパステルに馴染ませる） === */
+  --c-term-bg:      #241526;
   --c-term-bar:     #37223A;
   --c-term-text:    #F2E9EF;  /* 14.6:1 ✅AAA */
-  --c-term-prompt:  #F49ECB;  /* パステルローズのプロンプト。濃地に 8.76:1 ✅AA */
-  --c-term-comment: #A892A0;  /* 出力/コメント行。6.02:1 ✅AA */
-  --c-term-accent:  #5FE3A8;  /* 実行結果の成功表示。10.77:1 ✅AA */
+  --c-term-prompt:  #F49ECB;  /* パステルローズのプロンプト。濃地 8.8:1 ✅AA */
+  --c-term-comment: #B49DAB;  /* 出力/コメント。濃地 6.1:1 ✅AA */
+  --c-term-accent:  #5FE3A8;  /* 実行結果の成功。10.8:1 ✅AA */
 
-  /* --- Typography --- */
+  /* === グラデーション（ぷっくりの素。カード地/ロゴタイル/CTA/進捗/バッジ） === */
+  --grad-page:    radial-gradient(120% 90% at 100% 0%, #FFE7F1 0%, rgba(255,231,241,0) 55%),
+                  radial-gradient(120% 90% at 0% 100%, #EFE7FB 0%, rgba(239,231,251,0) 55%);
+  --grad-card:    linear-gradient(160deg, #FFFFFF 0%, #FFF3F8 100%);    /* 白カードのほのか地 */
+  --grad-hero:    linear-gradient(150deg, #FFE9F2 0%, #FFF4F9 45%, #F3ECFD 100%); /* コース主役カード地 */
+  --grad-brand:   linear-gradient(150deg, #E96FAC 0%, #C23B7C 100%);    /* CTA/ロゴタイル/現在ステップ。白文字AA */
+  --grad-progress:linear-gradient(90deg, #F58EC0 0%, #C23B7C 100%);     /* 進捗バー */
+  --grad-arrow:   linear-gradient(150deg, #FBD0E4 0%, #F7B6D3 100%);    /* 章カードの丸矢印（ソフトピンク円） */
+
+  /* === タイポ === */
   --font-sans: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
                "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
   --font-mono: "SFMono-Regular", "SF Mono", "JetBrains Mono", Menlo, Consolas,
                "Liberation Mono", "Courier New", monospace;
-  --fs-display: 28px;
-  --fs-h1: 22px;
-  --fs-h2: 18px;
+  --fs-display: 34px;  /* おかえり！の極太 */
+  --fs-h1: 24px;
+  --fs-h2: 19px;
   --fs-h3: 15px;
   --fs-body: 15px;
   --fs-sm: 13px;
   --fs-xs: 11px;
 
-  /* --- Spacing --- */
+  /* === スペーシング（8pxグリッド） === */
   --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
   --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
 
-  /* --- Radius --- */
-  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px; --radius-pill: 999px;
+  /* === 角丸（大きめ＝ふんわり） === */
+  --radius-sm: 10px; --radius-md: 14px; --radius-lg: 18px; --radius-xl: 24px;
+  --radius-2xl: 30px; --radius-pill: 999px;
 
-  /* --- Shadow（パステルに馴染むやわらかいプラム影） --- */
-  --shadow-sm: 0 1px 2px rgba(120,40,80,.06);
-  --shadow-md: 0 6px 18px rgba(120,40,80,.09);
-  --shadow-lg: 0 14px 34px rgba(120,40,80,.14);
-  --shadow-brand: 0 8px 20px rgba(181,69,121,.30);
+  /* === 影（やわらかく大きい。ぷっくり用にカラー影＋内側ハイライト） === */
+  --shadow-sm:   0 2px 6px rgba(120,40,80,.06);
+  --shadow-md:   0 10px 24px rgba(120,40,80,.10);
+  --shadow-lg:   0 22px 50px rgba(120,40,80,.14);
+  --shadow-pink: 0 14px 30px rgba(214,76,140,.30);          /* CTA/ロゴタイルの色付き影 */
+  --inner-hi:    inset 0 1px 0 rgba(255,255,255,.65);        /* 内側ハイライト（ぷっくり） */
+  --inner-hi-strong: inset 0 2px 3px rgba(255,255,255,.55), inset 0 -3px 6px rgba(120,40,80,.10);
 
-  /* --- Motion --- */
+  /* === モーション === */
   --ease: cubic-bezier(.22,1,.36,1);
-  --dur-fast: 120ms; --dur: 200ms; --dur-slow: 320ms;
+  --dur-fast: 120ms; --dur: 220ms; --dur-slow: 360ms;
 
-  /* --- Breakpoints (reference) --- */
+  /* === ブレークポイント（参考） === */
   --bp-sm: 640px; --bp-md: 960px;
-
-  /* --- 教材テーマカラー（既定 = サイト共通のローズ／brand）---
-     教材ごとに「パステルのテーマ色」を割り当てるための3トークン。
-     コンポーネントは var(--c-accent-course, var(--c-brand)) の形で参照し、
-     テーマクラス（.theme-terminal / .theme-git / .theme-python）が無い場所では
-     自動的に従来の brand（ローズ）にフォールバックする。
-       --c-accent-course        : 押せるCTA・進捗フィル・主アクセント（白文字がAAを満たす濃さ）
-       --c-accent-course-bright : .btn--primary グラデの明側ストップ（白文字AAを満たす濃さに留める）
-       --c-accent-course-soft   : パステルの“面”（現在地ナビ地・チップ地・ロゴタイル地・バッジ地）
-       --c-accent-course-strong : soft地／白地の上に乗る“文字”用の濃いめ（≥4.5:1）
-     既定はGit=brandと同値（サイト共通デフォルト）。 */
-  --c-accent-course:        var(--c-brand);
-  --c-accent-course-bright: var(--c-brand-bright);
-  --c-accent-course-soft:   var(--c-brand-soft);
-  --c-accent-course-strong: var(--c-brand-strong);
-}
-
-/* =========================================================================
-   教材テーマ（パステル3色を自然に散らす）
-   router.js が教材配下の画面ルート要素に .theme-<courseId> を付与する。
-   コースカードは各カードに自分のテーマを付ける（TOPで3色が同時に見える）。
-
-   配色は「面(soft)はパステルで軽やか／文字(strong)・CTA(accent)は濃さでAA確保」の
-   role 分担。全組み合わせを contrast checker で実測（本文・現在地ハイライト≥4.5:1、
-   ボタン白文字はグラデ全域で≥4.5:1）。
-   ※共通のセマンティック色（ヒント青/注意黄/正解緑/不正解赤）はテーマで上書きしない。
-   ========================================================================= */
-
-/* ── ターミナル = パステルスカイ（水色／シアン系） ──
-   accent #1577A0 : 白文字 5.03:1 ✅AA（CTA・進捗）
-   bright #16789F : 白文字 4.97:1 ✅AA（グラデ明側。accentより僅かに明るいだけに留める）
-   soft   #E1F3FA : パステルスカイの面
-   strong #0E6A8C : soft地 5.32:1 / 白地 6.07:1 ✅AA（現在地ハイライト文字・チップ文字）*/
-.theme-terminal {
-  --c-accent-course:        #1577A0;
-  --c-accent-course-bright: #16789F;
-  --c-accent-course-soft:   #E1F3FA;
-  --c-accent-course-strong: #0E6A8C;
-}
-
-/* ── Git = ローズ／ピンク（現ブランド色を活かす。サイト共通デフォルトと同値）──
-   accent #B54579 : 白文字 5.13:1 ✅AA
-   bright #BE4D85 : 白文字 4.58:1 ✅AA
-   soft   #FCE4EF : パステルピンクの面
-   strong #A83C6E : soft地 4.94:1 / 白地 5.94:1 ✅AA */
-.theme-git {
-  --c-accent-course:        #B54579;
-  --c-accent-course-bright: #BE4D85;
-  --c-accent-course-soft:   #FCE4EF;
-  --c-accent-course-strong: #A83C6E;
-}
-
-/* ── Python = パステルアンバー（黄色系）──
-   淡い黄色地に黄文字は破綻しやすいので、CTA/文字は“濃いアンバー”で受ける設計。
-   accent #7A5800 : 白文字 6.51:1 ✅AA（CTA・進捗）
-   bright #8A6300 : 白文字 5.43:1 ✅AA（グラデ明側）
-   soft   #FBEFC9 : パステルイエローの面
-   strong #7A5600 : soft地 5.79:1 / 白地 6.65:1 ✅AA（現在地ハイライト文字）*/
-.theme-python {
-  --c-accent-course:        #7A5800;
-  --c-accent-course-bright: #8A6300;
-  --c-accent-course-soft:   #FBEFC9;
-  --c-accent-course-strong: #7A5600;
 }
 
 /* =========================================================================
@@ -156,87 +116,142 @@ body {
   font-size: var(--fs-body);
   line-height: 1.8;
   color: var(--c-text);
+  /* base はパステルピンク。grad-page をその上に固定で重ねる（color と image を分離して指定）。
+     ※ shorthand `background: <color> <image> fixed` は var 併用だと無効化されることがあるため分割。 */
   background-color: var(--c-bg);
-  background-image:
-    radial-gradient(900px 520px at 100% -6%, #FCE0EC 0%, rgba(252,224,236,0) 55%),
-    radial-gradient(820px 520px at 0% 6%, #ECE3FB 0%, rgba(236,227,251,0) 52%);
+  background-image: var(--grad-page);
   background-attachment: fixed;
+  background-repeat: no-repeat;
   -webkit-font-smoothing: antialiased;
-  /* sticky footer: body を縦フレックスにして main を伸ばし、footer を最下部へ固定。
-     短いページでフッター下にパステル帯が残る「浮き」を防ぐ。
-     body 直下の子は header.appbar / main#app / footer.appfoot / <script>（script は不可視で高さ0）。 */
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
 }
-/* main を伸縮させて余白を吸わせる。footer は縮まず最下部に張り付く。
-   ※ body が flex になると .page-wrap の margin:0 auto が交差軸で main を縮めてしまうため、
-     width:100% を明示して本来の max-width(960) + 中央寄せに戻す。 */
-main#app { flex: 1 0 auto; width: 100%; }
-.appbar, .appfoot { flex: none; }
-h1,h2,h3 { line-height: 1.4; margin: 0; font-weight: 700; }
+h1,h2,h3 { line-height: 1.35; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 p { margin: 0; }
 a { color: var(--c-brand-strong); text-decoration: none; }
 a:hover { text-decoration: underline; }
 button { font-family: inherit; cursor: pointer; }
 :focus-visible {
-  /* フォーカスリングは維持。教材内ではその教材のテーマ色に染め、全体では brand に戻る。
-     どのテーマ色も白地で十分なコントラスト（sky 5.03 / rose 5.13 / amber 6.51:1 以上）。 */
-  outline: 2px solid var(--c-accent-course, var(--c-brand));
+  outline: 3px solid var(--c-brand);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
+svg { display: block; }
 
 /* =========================================================================
    Layout primitives
    ========================================================================= */
-.page-wrap { max-width: 960px; margin: 0 auto; padding: 0 var(--space-5); }
+.page-wrap { max-width: 1000px; margin: 0 auto; padding: 0 var(--space-5); }
 .prose { max-width: 680px; }
 
-.screen {
-  background: var(--c-bg);
-}
+/* 各画面の縦リズム（prototype の demo-band 相当を本実装の view に付与） */
+.view { padding: var(--space-7) 0; }
+/* 学習ページは章ナビ＋本文が主役。上の余白をやや詰める。 */
+.view--page { padding-top: var(--space-5); }
+
+/* SVG 装飾アイコン（sparkle/star/dot）— 既定は currentColor 継承の装飾 */
+.deco { position: absolute; pointer-events: none; }
+.spark { color: var(--c-brand); }                 /* 既定 sparkle 色（文脈で上書き） */
+@keyframes twinkle { 0%,100%{opacity:.55; transform:scale(.9);} 50%{opacity:1; transform:scale(1.08);} }
+.spark--anim { animation: twinkle 2.6s var(--ease) infinite; }
 
 /* =========================================================================
-   Header / Footer
+   App header（共通の上部バー）— ふんわり、ダミーnavなし
+   実在の遷移先のみ: ホーム/教材選択・復習リスト
    ========================================================================= */
 .appbar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: var(--space-4) var(--space-5);
-  background: var(--c-surface);
-  border-bottom: 1px solid var(--c-border);
+  position: relative;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  margin: var(--space-4) auto 0; max-width: 1000px;
+  background: linear-gradient(150deg, #FFFFFFEE, #FFF2F8EE);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-md), var(--inner-hi);
+  backdrop-filter: saturate(1.2) blur(6px);
 }
-.logo { display: flex; align-items: center; gap: var(--space-2); font-weight: 700; font-size: var(--fs-h3);
-  color: var(--c-text); }
+.logo { display: flex; align-items: center; gap: var(--space-3); font-weight: 800; font-size: var(--fs-h3);
+  color: var(--c-text); text-decoration: none; }
 .logo:hover { text-decoration: none; }
 .logo__mark {
-  width: 28px; height: 28px; border-radius: var(--radius-md);
-  background: var(--c-brand); color: #fff;
-  display: grid; place-items: center; font-family: var(--font-mono); font-size: 15px;
+  width: 38px; height: 38px; border-radius: 13px; flex: none;
+  background: var(--grad-brand); color: #fff;
+  display: grid; place-items: center;
+  box-shadow: var(--shadow-pink), var(--inner-hi-strong);
 }
-/* ロゴマークに SVG（terminal アイコン等）を入れたとき用 */
-.logo__mark .icon, .logo__mark svg { width: 18px; height: 18px; }
-.appbar__meta { font-size: var(--fs-sm); color: var(--c-text-muted); }
-.appbar__actions { display: flex; align-items: center; gap: var(--space-3); }
+.logo__mark svg { width: 21px; height: 21px; }
+.appnav { display: flex; align-items: center; gap: var(--space-1); }
+.appnav a {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-pill);
+  color: var(--c-text-muted); font-weight: 700; font-size: var(--fs-sm);
+}
+.appnav a:hover { background: var(--c-brand-soft); color: var(--c-brand-strong); text-decoration: none; }
+.appnav a.is-current { background: var(--c-brand-soft); color: var(--c-brand-strong); }
+.appnav a svg { width: 17px; height: 17px; }
+.appnav__count { font-variant-numeric: tabular-nums; }
 .appfoot {
-  padding: var(--space-5); text-align: center;
-  font-size: var(--fs-sm); color: var(--c-text-muted);
-  border-top: 1px solid var(--c-border); background: var(--c-surface);
-  /* margin-top は付けない: sticky footer 下に隙間（ピンク帯）が出るのを防ぐため。
-     ページ内コンテンツとの間隔は各 view の padding（.view 等）で確保する。 */
+  padding: var(--space-6) var(--space-5) var(--space-7); text-align: center;
+  font-size: var(--fs-sm); color: var(--c-text-faint);
 }
+.appfoot svg { width: 15px; height: 15px; vertical-align: -3px; }
 .appfoot a { color: var(--c-text-muted); }
 
 /* =========================================================================
-   Breadcrumb
+   おかえり！ヒーローヘッダー（TOP 上部）
    ========================================================================= */
-.breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2);
-  font-size: var(--fs-sm); color: var(--c-text-muted); margin-bottom: var(--space-4); }
-/* パンくずのリンクは教材内ではテーマ色（strong）に揃える（footer等の global a は据え置き）。
-   strong は白系地に≥4.5:1（sky 6.07 / rose 5.94 / amber 6.65:1）。 */
-.breadcrumb a { color: var(--c-accent-course-strong, var(--c-brand-strong)); }
-.breadcrumb__sep { color: var(--c-text-faint); }
-.breadcrumb [aria-current="page"] { color: var(--c-text); font-weight: 700; }
+.hero {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-6);
+  flex-wrap: wrap;
+  background: var(--grad-hero);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-7) var(--space-6);
+  box-shadow: var(--shadow-md), var(--inner-hi);
+  margin-bottom: var(--space-6);
+}
+.hero__cloud { position: absolute; top: -40px; right: -30px; width: 220px; color: #FFFFFF; opacity: .6; }
+.hero__cloud--2 { top: auto; right: auto; bottom: -50px; left: -40px; width: 180px; color: #F4ECFE; opacity: .7; }
+.hero__copy { position: relative; min-width: 240px; flex: 1; }
+.hero__title {
+  font-size: var(--fs-display); font-weight: 800; color: #4A1E38;
+  letter-spacing: -.02em; display: inline-flex; align-items: center; gap: var(--space-3);
+}
+.hero__title .spark { color: #F58EC0; width: 30px; height: 30px; }
+.hero__sub { color: var(--c-text-muted); margin-top: var(--space-2); font-size: var(--fs-h3); }
+
+/* 進捗ピルカード（ヒーロー右） */
+.progress-pill {
+  position: relative; min-width: 230px;
+  background: linear-gradient(150deg, #FFFFFF, #FFF1F7);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: var(--shadow-md), var(--inner-hi);
+  display: flex; align-items: center; gap: var(--space-4);
+}
+.progress-pill__icon {
+  width: 46px; height: 46px; border-radius: 50%; flex: none;
+  background: var(--grad-brand); color: #fff;
+  display: grid; place-items: center;
+  box-shadow: var(--shadow-pink), var(--inner-hi-strong);
+}
+.progress-pill__icon svg { width: 24px; height: 24px; }
+.progress-pill__body { flex: 1; min-width: 0; }
+.progress-pill__label { font-size: var(--fs-xs); color: var(--c-text-muted); font-weight: 700; }
+.progress-pill__pct { font-size: 22px; font-weight: 800; color: var(--c-brand-strong);
+  font-variant-numeric: tabular-nums; line-height: 1.1; }
+.progress-pill .progress__track { margin-top: 7px; }
+
+/* =========================================================================
+   Progress bar（共通）— 細いピンクグラデ
+   ========================================================================= */
+.progress { display: flex; align-items: center; gap: var(--space-3); }
+.progress__track { flex: 1; height: 9px; background: #FBDDEB;
+  border-radius: var(--radius-pill); overflow: hidden; box-shadow: inset 0 1px 2px rgba(120,40,80,.10); }
+.progress__fill { height: 100%; background: var(--grad-progress); border-radius: var(--radius-pill);
+  box-shadow: var(--inner-hi); transition: width var(--dur-slow) var(--ease); }
+.progress__label { font-size: var(--fs-sm); color: var(--c-text-muted); font-weight: 800;
+  white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 /* =========================================================================
    Buttons
@@ -244,295 +259,330 @@ button { font-family: inherit; cursor: pointer; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
   min-height: 44px; padding: var(--space-3) var(--space-5);
-  border-radius: var(--radius-md); font-weight: 700; font-size: var(--fs-body);
-  border: 1px solid transparent; transition: transform var(--dur) var(--ease),
-    background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-  text-decoration: none;
+  border-radius: var(--radius-pill); font-weight: 800; font-size: var(--fs-body);
+  border: 1px solid transparent; text-decoration: none;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 .btn:hover { text-decoration: none; }
-/* 主ボタン: テーマ色のグラデ（bright→accent）。
-   各テーマとも white×グラデ全域で ≥4.5:1（sky 4.97–5.03 / rose 4.58–5.13 / amber 5.43–6.51）。
-   淡い黄色をそのまま使うと白文字が破綻するため、amber はトークン側で濃いトーンに寄せて回避済み。 */
-.btn--primary { background: linear-gradient(135deg, var(--c-accent-course-bright, var(--c-brand-bright)), var(--c-accent-course, var(--c-brand))); color: #fff; box-shadow: var(--shadow-brand); }
-.btn--primary:hover { background: linear-gradient(135deg, var(--c-accent-course, var(--c-brand)), var(--c-accent-course-strong, var(--c-brand-strong))); transform: translateY(-1px); }
+.btn svg { width: 18px; height: 18px; }
+.btn--primary { background: var(--grad-brand); color: #fff;
+  box-shadow: var(--shadow-pink), var(--inner-hi-strong); }
+.btn--primary:hover { transform: translateY(-2px); box-shadow: 0 18px 36px rgba(214,76,140,.36), var(--inner-hi-strong); }
 .btn--primary:active { transform: translateY(0); box-shadow: var(--shadow-sm); }
-.btn--ghost { background: transparent; color: var(--c-text); border-color: var(--c-border-strong); }
-.btn--ghost:hover { background: var(--c-surface-2); }
+.btn--ghost { background: #fff; color: var(--c-brand-strong); border-color: var(--c-border-strong);
+  box-shadow: var(--shadow-sm); }
+.btn--ghost:hover { background: var(--c-brand-soft); border-color: var(--c-brand); }
 .btn:disabled, .btn[aria-disabled="true"] {
   background: var(--c-surface-2); color: var(--c-text-faint);
   box-shadow: none; cursor: not-allowed; transform: none; border-color: transparent;
-  pointer-events: none;
 }
-.btn--sm { min-height: 36px; padding: var(--space-2) var(--space-4); font-size: var(--fs-sm); }
+.btn--sm { min-height: 38px; padding: var(--space-2) var(--space-4); font-size: var(--fs-sm); }
 
 /* =========================================================================
-   Progress bar
-   ========================================================================= */
-.progress { display: flex; align-items: center; gap: var(--space-3); }
-.progress__track { flex: 1; height: 8px; background: var(--c-surface-2);
-  border-radius: var(--radius-pill); overflow: hidden; }
-.progress__fill { height: 100%;
-  background: linear-gradient(90deg, var(--c-accent-course-bright, var(--c-brand-bright)), var(--c-accent-course, var(--c-brand)));
-  border-radius: var(--radius-pill);
-  transition: width var(--dur-slow) var(--ease); }
-.progress__label { font-size: var(--fs-sm); color: var(--c-text-muted); font-weight: 700;
-  white-space: nowrap; font-variant-numeric: tabular-nums; }
-
-/* =========================================================================
-   Badges
+   Badges / pills
    ========================================================================= */
 .badge { display: inline-flex; align-items: center; gap: 6px;
-  font-size: var(--fs-xs); font-weight: 700; padding: 3px 10px; border-radius: var(--radius-pill); }
+  font-size: var(--fs-xs); font-weight: 800; padding: 4px 11px; border-radius: var(--radius-pill);
+  box-shadow: var(--inner-hi); }
+.badge svg { width: 13px; height: 13px; }
 .badge--done { background: var(--c-success-soft); color: var(--c-success); }
-.badge--todo { background: var(--c-surface-2); color: var(--c-text-faint); }
-.badge--achievement { background: var(--c-accent-soft); color: var(--c-accent-strong); }
-/* 「学習中／はじめる前」バッジ。教材テーマの soft地×strong文字（≥4.5:1）でカードと色を合わせる。 */
-.badge--new { background: var(--c-accent-course-soft, var(--c-brand-soft)); color: var(--c-accent-course-strong, var(--c-brand-strong)); }
-/* round check/empty marker */
+.badge--todo { background: var(--c-surface-2); color: var(--c-text-muted); }
+.badge--new  { background: var(--c-brand-soft); color: var(--c-brand-strong); }
+.badge--achieve { background: var(--c-lav-soft); color: var(--c-lav); }
+/* ページ数チップ（淡ラベンダー/グレーのピル） */
+.chip-pages { display: inline-flex; align-items: center; gap: 5px;
+  font-size: var(--fs-xs); font-weight: 800; color: #5B4A8C;
+  background: #EFEAFB; padding: 4px 10px; border-radius: var(--radius-pill); }
+.chip-pages svg { width: 13px; height: 13px; }
+/* round check marker */
 .check {
   width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center;
-  font-size: 12px; flex: none;
+  flex: none; box-shadow: var(--inner-hi);
 }
+.check svg { width: 13px; height: 13px; }
 .check--done { background: var(--c-success); color: #fff; }
-.check--todo { background: transparent; border: 2px solid var(--c-border-strong); }
+.check--todo { background: #fff; border: 2px solid var(--c-border-strong); box-shadow: none; }
 
 /* =========================================================================
-   Inline code + Term chip (用語チップ)
+   Inline code + 用語チップ
    ========================================================================= */
-/* インラインコード文字もテーマの strong に追従（教材内で色がそろう。白系地に≥4.5:1）。 */
-.code { font-family: var(--font-mono); font-size: var(--fs-sm);
-  background: var(--c-surface-2); color: var(--c-accent-course-strong, var(--c-brand-strong));
-  padding: 2px 6px; border-radius: var(--radius-sm); }
+.code { font-family: var(--font-mono); font-size: .88em;
+  background: var(--c-surface-2); color: var(--c-brand-strong);
+  padding: 2px 7px; border-radius: 7px; }
 
 .term-chip { position: relative; display: inline-block; }
-/* 用語チップ: 文字はテーマ strong、下線はテーマ accent。教材ごとのアクセントになる。 */
 .term-chip__word {
-  border: none; background: none; padding: 0; font: inherit;
-  color: var(--c-accent-course-strong, var(--c-brand-strong));
-  border-bottom: 2px dotted var(--c-accent-course, var(--c-brand)); cursor: help; line-height: 1.4;
+  border: none; background: none; padding: 0; font: inherit; color: var(--c-brand-strong);
+  border-bottom: 2px dotted var(--c-brand); cursor: help; line-height: 1.4; font-weight: 700;
 }
 .term-chip__tip {
   position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%) translateY(4px);
   width: max-content; max-width: 260px;
-  background: var(--c-text); color: #fff; font-size: var(--fs-sm); font-weight: 400; line-height: 1.6;
+  background: #2C1A2A; color: #fff; font-size: var(--fs-sm); font-weight: 400; line-height: 1.6;
   padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg); text-align: left;
   opacity: 0; visibility: hidden; pointer-events: none;
-  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
-  z-index: 10;
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); z-index: 10;
 }
-.term-chip__tip::after {
-  content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-  border: 6px solid transparent; border-top-color: var(--c-text);
-}
-.term-chip:hover .term-chip__tip,
-.term-chip:focus-within .term-chip__tip,
-.term-chip.is-open .term-chip__tip {
+.term-chip__tip::after { content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: #2C1A2A; }
+.term-chip:hover .term-chip__tip, .term-chip:focus-within .term-chip__tip, .term-chip.is-open .term-chip__tip {
   opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
 }
 
 /* =========================================================================
-   Terminal (ターミナル風コマンドボックス) — 主役
+   コースカード（TOP の主役）— 淡いピンクグラデの大カード
    ========================================================================= */
-.terminal { background: var(--c-term-bg); border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md); overflow: hidden; margin: var(--space-5) 0; }
-.terminal__bar {
-  display: flex; align-items: center; gap: var(--space-3);
-  padding: var(--space-3) var(--space-4); background: var(--c-term-bar);
+.course-hero {
+  position: relative; overflow: hidden;
+  background: var(--grad-hero);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-lg), var(--inner-hi);
+  margin-bottom: var(--space-6);
 }
-.terminal__dots { display: flex; gap: 7px; }
-.terminal__dots i { width: 12px; height: 12px; border-radius: 50%; display: block; }
-.terminal__dots .r { background: #FF5F57; }
-.terminal__dots .y { background: #FEBC2E; }
-.terminal__dots .g { background: #28C840; }
-.terminal__title { font-family: var(--font-mono); font-size: var(--fs-xs);
-  color: var(--c-term-comment); margin-left: var(--space-2);
-  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.terminal__copy {
-  margin-left: auto; flex-shrink: 0; white-space: nowrap;
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(255,255,255,.08); color: var(--c-term-text);
-  border: none; border-radius: var(--radius-sm); padding: 6px 10px;
-  font-size: var(--fs-xs); font-weight: 700; transition: background var(--dur) var(--ease);
+.course-hero__top { display: flex; align-items: flex-start; gap: var(--space-5); flex-wrap: wrap; }
+.course-hero__logo {
+  position: relative; width: 76px; height: 76px; border-radius: 22px; flex: none;
+  background: var(--grad-brand); color: #fff;
+  display: grid; place-items: center;
+  box-shadow: var(--shadow-pink), var(--inner-hi-strong);
 }
-.terminal__copy:hover { background: rgba(255,255,255,.18); }
-.terminal__copy.is-copied { color: var(--c-term-accent); }
-.terminal__body { padding: var(--space-5); font-family: var(--font-mono);
-  font-size: 14px; line-height: 1.9; color: var(--c-term-text); overflow-x: auto; }
-.terminal__line { white-space: pre; }
-.terminal__prompt { color: var(--c-term-prompt); user-select: none; }
-.terminal__prompt::after { content: " "; }
-.terminal__out { color: var(--c-term-comment); }
-.terminal__ok { color: var(--c-term-accent); }
+.course-hero__logo svg { width: 42px; height: 42px; }
+/* ロゴタイル右上の小 sparkle（白・装飾）。prototype のインライン装飾を class 化。 */
+.course-hero__logo-spark { position: absolute; top: -9px; right: -9px; width: 18px; height: 18px; color: #fff; }
+.course-hero__head { flex: 1; min-width: 200px; }
+.course-hero__title { font-size: 26px; font-weight: 800; color: #4A1E38;
+  display: inline-flex; align-items: center; gap: var(--space-2); }
+.course-hero__title .spark { color: #F58EC0; width: 22px; height: 22px; }
+.course-hero__tag { color: var(--c-text-muted); font-size: var(--fs-h3); margin-top: 4px; }
+.course-hero__cta { align-self: flex-start; }
 
-/* =========================================================================
-   Callout (補足カード)
-   ========================================================================= */
-.callout { display: flex; gap: var(--space-3); padding: var(--space-4);
-  border-radius: var(--radius-md); margin: var(--space-5) 0; border-left: 4px solid; }
-.callout__icon { font-size: 18px; line-height: 1.5; flex: none; }
-.callout__title { font-weight: 700; font-size: var(--fs-sm); margin-bottom: 2px; }
-.callout__body { font-size: var(--fs-sm); line-height: 1.7; }
-.callout--hint { background: var(--c-info-soft); border-color: var(--c-info); }
-.callout--hint .callout__title { color: var(--c-info); }
-.callout--hint .callout__icon { color: var(--c-info); }
-.callout--warn { background: var(--c-warning-soft); border-color: var(--c-warning); }
-.callout--warn .callout__title { color: var(--c-warning-dark); }
-.callout--warn .callout__icon { color: var(--c-warning-dark); }
+/* ステップ進捗インジケーター（①②③④⑤ … 旗） */
+.stepper { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin-top: var(--space-2); }
+.stepper__node {
+  width: 38px; height: 38px; border-radius: 50%; flex: none;
+  display: grid; place-items: center; font-weight: 800; font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums; position: relative; z-index: 1;
+}
+.stepper__node--done, .stepper__node--current {
+  background: var(--grad-brand); color: #fff;
+  box-shadow: var(--shadow-pink), var(--inner-hi-strong);
+}
+.stepper__node--current { outline: 3px solid #fff; outline-offset: -1px; }
+.stepper__node--todo { background: #fff; color: var(--c-text-muted);
+  border: 2px solid var(--c-border-strong); box-shadow: var(--shadow-sm); }
+.stepper__node--done svg { width: 18px; height: 18px; }
+.stepper__link { width: 26px; height: 0; border-top: 3px dotted var(--c-border-strong);
+  flex: none; }
+.stepper__link.is-on { border-top-color: var(--c-brand); }
+.stepper__flag {
+  width: 38px; height: 38px; border-radius: 50%; flex: none; margin-left: 2px;
+  display: grid; place-items: center; color: var(--c-brand-strong);
+  background: var(--c-brand-soft); box-shadow: var(--inner-hi);
+}
+.stepper__flag svg { width: 19px; height: 19px; }
 
-/* =========================================================================
-   Course cards (TOP 教材選択)
-   ========================================================================= */
-.course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-5); }
-.course-card {
-  background: var(--c-surface); border: 1px solid var(--c-border);
-  border-radius: var(--radius-xl); padding: var(--space-5);
-  box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: var(--space-3);
+/* 章カードの縦リスト（白・角丸・やわ影。ぷっくり） */
+.chapter-list { display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-6); }
+.chapter-card {
+  position: relative;
+  display: flex; align-items: center; gap: var(--space-4);
+  background: var(--grad-card); border: 1px solid var(--c-border);
+  border-radius: var(--radius-xl); padding: var(--space-4) var(--space-5);
+  box-shadow: var(--shadow-md), var(--inner-hi);
+  text-decoration: none; color: var(--c-text);
   transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
-.course-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-/* ロゴ枠: 教材アイコン（git / terminal / python ロゴ）を四角タイルに収める。
-   絵文字の名残として .course-card__emoji を残しつつ、中の SVG をこのサイズで描画。 */
-.course-card__emoji,
-.course-card__logo {
-  width: 52px; height: 52px; flex: none; line-height: 1;
-  display: grid; place-items: center;
-  border-radius: var(--radius-md);
-  /* ロゴタイル地はテーマの soft、ロゴ字色は strong（soft地に≥4.5:1）。
-     TOPで 水色／ピンク／黄色のタイルが同時に並んで3色が一目で伝わる。 */
-  background: var(--c-accent-course-soft, var(--c-brand-soft));
-  color: var(--c-accent-course-strong, var(--c-brand-strong));
-}
-.course-card__emoji .icon, .course-card__emoji svg,
-.course-card__logo .icon, .course-card__logo svg { width: 30px; height: 30px; }
-.course-card__title { font-size: var(--fs-h2); }
-.course-card__desc { font-size: var(--fs-sm); color: var(--c-text-muted); flex: 1; }
-.course-card__foot { display: flex; align-items: center; justify-content: space-between;
-  gap: var(--space-3); margin-top: var(--space-2); }
-.course-card--soon { background: var(--c-surface-2); box-shadow: none; }
-.course-card--soon:hover { transform: none; box-shadow: none; }
-/* 準備中でもロゴタイルにはテーマ soft を残し「この教材は黄色」と伝える。
-   ただし“まだ準備中”感を保つため、彩度は opacity で落とし、グリフは faint に。 */
-.course-card--soon .course-card__emoji,
-.course-card--soon .course-card__logo {
-  background: var(--c-accent-course-soft, var(--c-surface));
-  color: var(--c-text-faint); opacity: .65;
-}
-.course-card--soon .course-card__title { color: var(--c-text-muted); }
+.chapter-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg), var(--inner-hi); text-decoration: none; }
 
-/* =========================================================================
-   Chapter cards (章一覧)
-   ========================================================================= */
-.chapter-list { display: flex; flex-direction: column; gap: var(--space-4); }
-.chapter-card {
-  display: flex; align-items: center; gap: var(--space-4);
-  background: var(--c-surface); border: 1px solid var(--c-border);
-  border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
-  box-shadow: var(--shadow-sm); transition: transform var(--dur) var(--ease),
-    box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
-  color: var(--c-text);
+/* 番号バッジ（角丸スクエア・グラデ・濃インク文字・周囲に sparkle/dot） */
+.num-badge {
+  position: relative; width: 50px; height: 50px; border-radius: 16px; flex: none;
+  display: grid; place-items: center; font-weight: 800; font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(155deg, var(--_a), var(--_b));
+  color: var(--_ink);
+  box-shadow: 0 8px 18px rgba(120,40,80,.18), var(--inner-hi-strong);
+  --_a: var(--badge1-a); --_b: var(--badge1-b); --_ink: var(--badge1-ink);
 }
-.chapter-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md);
-  border-color: var(--c-border-strong); text-decoration: none; }
-.chapter-card__num {
-  width: 40px; height: 40px; border-radius: var(--radius-md); flex: none;
-  background: var(--c-accent-course-soft, var(--c-brand-soft));
-  color: var(--c-accent-course-strong, var(--c-brand-strong));
-  display: grid; place-items: center; font-weight: 700; font-size: var(--fs-h3);
-}
+.num-badge[data-cycle="1"]{ --_a:var(--badge1-a); --_b:var(--badge1-b); --_ink:var(--badge1-ink); }
+.num-badge[data-cycle="2"]{ --_a:var(--badge2-a); --_b:var(--badge2-b); --_ink:var(--badge2-ink); }
+.num-badge[data-cycle="3"]{ --_a:var(--badge3-a); --_b:var(--badge3-b); --_ink:var(--badge3-ink); }
+.num-badge[data-cycle="4"]{ --_a:var(--badge4-a); --_b:var(--badge4-b); --_ink:var(--badge4-ink); }
+.num-badge[data-cycle="5"]{ --_a:var(--badge5-a); --_b:var(--badge5-b); --_ink:var(--badge5-ink); }
+.num-badge__spark { position: absolute; top: -7px; right: -7px; width: 16px; height: 16px;
+  color: var(--_ink); opacity: .9; }
+.num-badge__dot { position: absolute; bottom: -3px; left: -4px; width: 7px; height: 7px;
+  border-radius: 50%; background: var(--_b); box-shadow: var(--inner-hi); }
+
 .chapter-card__body { flex: 1; min-width: 0; }
-.chapter-card__title { font-size: var(--fs-h3); font-weight: 700; }
-.chapter-card__meta { font-size: var(--fs-sm); color: var(--c-text-muted); margin-top: 2px; }
-.chapter-card__side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
-.chapter-card__arrow { color: var(--c-text-faint); font-size: 18px; }
-
-/* テスト導線（章一覧の各章カード下） */
-.chapter-quiz-link {
-  display: flex; align-items: center; gap: var(--space-2);
-  margin: calc(var(--space-2) * -1 + 2px) 0 0;
-  padding: var(--space-2) var(--space-4);
+.chapter-card__title { font-size: var(--fs-h2); font-weight: 800; }
+.chapter-card__meta { font-size: var(--fs-sm); color: var(--c-text-muted); margin-top: 3px; }
+.chapter-card__side { display: flex; align-items: center; gap: var(--space-3); flex: none; flex-wrap: wrap;
+  justify-content: flex-end; }
+.chapter-card__metawrap { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+/* 丸い矢印ボタン（ピンクのソフト円） */
+.arrow-btn {
+  width: 42px; height: 42px; border-radius: 50%; flex: none; border: none;
+  background: var(--grad-arrow); color: var(--c-brand-strong);
+  display: grid; place-items: center; box-shadow: var(--shadow-md), var(--inner-hi);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
+.arrow-btn svg { width: 20px; height: 20px; }
+.chapter-card:hover .arrow-btn { transform: translateX(2px) scale(1.05); }
+
+/* 章テスト導線（章カードの下にぶら下げる小リンク） */
+.chapter-quiz-link { margin: calc(var(--space-2) * -1) 0 var(--space-2) 66px; }
+@media (max-width: 640px) { .chapter-quiz-link { margin-left: 0; } }
 
 /* =========================================================================
-   Learning page layout (学習ページ) — chapter-nav + content
+   コース選択グリッド（小カード：続き/準備中）
    ========================================================================= */
-.learn { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--space-6);
-  padding: var(--space-5) 0; }
-/* minmax(0,1fr): コンテンツ列が min-content（ターミナルの長い行）に引っ張られて
-   膨張するのを防ぐ。長い行はターミナル内の overflow-x:auto で横スクロールさせる。 */
-.content-card { min-width: 0; }
-.chapter-nav { font-size: var(--fs-sm); }
-.chapter-nav__title { font-weight: 700; font-size: var(--fs-sm); color: var(--c-text-muted);
-  text-transform: none; margin-bottom: var(--space-2); }
-.chapter-nav__list { list-style: none; margin: 0 0 var(--space-4); padding: 0;
-  display: flex; flex-direction: column; gap: 2px; }
-.chapter-nav__link {
-  display: flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
-  color: var(--c-text); text-decoration: none; border-left: 3px solid transparent;
+.course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-5); }
+.mini-card {
+  position: relative; overflow: hidden;
+  background: var(--grad-card); border: 1px solid var(--c-border);
+  border-radius: var(--radius-xl); padding: var(--space-5);
+  box-shadow: var(--shadow-md), var(--inner-hi);
+  display: flex; flex-direction: column; gap: var(--space-3);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
-.chapter-nav__link:hover { background: var(--c-surface-2); text-decoration: none; }
-/* 現在ページ = テーマの soft地 + strong文字 + テーマ色の左バー。
-   旧実装はピンク地にピンク文字で見にくかった（コントラスト不足）ため、
-   「淡い面 × 濃い文字（≥4.5:1）× 太字 × 3px左バー」で各教材ともはっきり見せる。
-   実測: 水色 strong#0E6A8C on soft#E1F3FA =5.32:1 / 黄 #7A5600 on #FBEFC9 =5.79:1 /
-        ピンク #A83C6E on #FCE4EF =4.94:1 すべて ✅AA。 */
-.chapter-nav__link.is-current {
-  background: var(--c-accent-course-soft, var(--c-brand-soft));
-  color: var(--c-accent-course-strong, var(--c-brand-strong));
-  font-weight: 700;
-  border-left-color: var(--c-accent-course, var(--c-brand));
+.mini-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg), var(--inner-hi); }
+.mini-card__logo {
+  width: 56px; height: 56px; border-radius: 17px; flex: none;
+  background: var(--grad-brand); color: #fff; display: grid; place-items: center;
+  box-shadow: var(--shadow-pink), var(--inner-hi-strong);
 }
-.chapter-nav__link .check { width: 16px; height: 16px; font-size: 10px; }
-.chapter-nav__quiz { margin-top: var(--space-2); }
+.mini-card__logo svg { width: 30px; height: 30px; }
+.mini-card__title { font-size: var(--fs-h2); }
+.mini-card__desc { font-size: var(--fs-sm); color: var(--c-text-muted); flex: 1; }
+.mini-card__foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-2); }
+.mini-card--soon { background: var(--c-surface-2); box-shadow: var(--shadow-sm); }
+.mini-card--soon .mini-card__logo { background: #E3D3DD; color: #fff; box-shadow: var(--inner-hi); }
+.mini-card--soon .mini-card__title { color: var(--c-text-muted); }
 
-.content-card { background: var(--c-surface); border: 1px solid var(--c-border);
-  border-radius: var(--radius-lg); padding: var(--space-6); box-shadow: var(--shadow-sm); }
-.content-card h1 { font-size: var(--fs-h1); margin-bottom: var(--space-4); }
+/* セクション見出し（「ほかの教材」など。脇に小 sparkle） */
+.section-title { font-size: var(--fs-h2); margin: var(--space-6) 0 var(--space-4);
+  display: flex; align-items: center; gap: 8px; }
+.section-title .spark { width: 18px; height: 18px; color: #F58EC0; }
+
+/* =========================================================================
+   Breadcrumb
+   ========================================================================= */
+.breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2);
+  font-size: var(--fs-sm); color: var(--c-text-muted); margin-bottom: var(--space-4); }
+.breadcrumb a { color: var(--c-brand-strong); font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+.breadcrumb a svg { width: 15px; height: 15px; }
+.breadcrumb__sep { color: var(--c-text-faint); }
+.breadcrumb [aria-current="page"] { color: var(--c-text); font-weight: 800; }
+
+/* =========================================================================
+   Terminal（コマンドボックス）— 主役の濃色ボックスをパステルに馴染ませる
+   ========================================================================= */
+.terminal { background: var(--c-term-bg); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md); overflow: hidden; margin: var(--space-5) 0;
+  border: 1px solid rgba(255,255,255,.06); }
+.terminal__bar { display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4); background: var(--c-term-bar); }
+.terminal__dots { display: flex; gap: 7px; }
+.terminal__dots i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+.terminal__dots .r { background: #FF7E94; } .terminal__dots .y { background: #FFD27E; } .terminal__dots .g { background: #7EE3A8; }
+.terminal__title { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-term-comment); margin-left: var(--space-2);
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }  /* 長いタイトルでコピーボタンを折らない */
+.terminal__copy { margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.10); color: var(--c-term-text); border: none; border-radius: var(--radius-pill);
+  padding: 6px 12px; font-size: var(--fs-xs); font-weight: 800; white-space: nowrap;
+  transition: background var(--dur) var(--ease); }
+.terminal__copy svg { width: 14px; height: 14px; }
+.terminal__copy:hover { background: rgba(255,255,255,.20); }
+.terminal__copy.is-copied { color: var(--c-term-accent); }
+.terminal__body { padding: var(--space-5); font-family: var(--font-mono); font-size: 14px; line-height: 1.9;
+  color: var(--c-term-text); overflow-x: auto; }
+.terminal__line { white-space: pre; }
+.terminal__prompt { color: var(--c-term-prompt); user-select: none; } .terminal__prompt::after { content: " "; }
+.terminal__out { color: var(--c-term-comment); } .terminal__ok { color: var(--c-term-accent); }
+
+/* =========================================================================
+   Callout（補足カード）— ぷっくりパステル
+   ========================================================================= */
+.callout { display: flex; gap: var(--space-3); padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg); margin: var(--space-5) 0; box-shadow: var(--shadow-sm), var(--inner-hi); }
+.callout__icon { flex: none; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center;
+  color: #fff; box-shadow: var(--inner-hi-strong); }
+.callout__icon svg { width: 19px; height: 19px; }
+.callout__title { font-weight: 800; font-size: var(--fs-sm); margin-bottom: 2px; }
+.callout__body { font-size: var(--fs-sm); line-height: 1.7; }
+.callout--hint { background: var(--c-info-soft); }
+.callout--hint .callout__icon { background: linear-gradient(150deg, #5AA0E0, #2A6BAC); }
+.callout--hint .callout__title { color: var(--c-info); }
+.callout--warn { background: var(--c-warning-soft); }
+.callout--warn .callout__icon { background: linear-gradient(150deg, #E2B43E, #B8860B); }
+.callout--warn .callout__title { color: var(--c-warning-dark); }
+
+/* =========================================================================
+   学習ページレイアウト（章ナビ + 本文）
+   ========================================================================= */
+/* 本文側トラックは minmax(0,1fr)。bare 1fr は min-width:auto となり、中の
+   ターミナル（white-space:pre の長い行）がトラックを押し広げて 375px で横溢れする。
+   → minmax(0,…) ＋ 子の min-width:0 で、長行はターミナル内部の overflow-x で吸収させる。 */
+.learn { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: var(--space-6); padding: var(--space-2) 0; }
+.chapter-nav { font-size: var(--fs-sm); }
+.chapter-nav__title { font-weight: 800; font-size: var(--fs-sm); color: var(--c-text-muted); margin-bottom: var(--space-3); }
+.chapter-nav__list { list-style: none; margin: 0 0 var(--space-4); padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.chapter-nav__link { display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
+  color: var(--c-text); text-decoration: none; }
+.chapter-nav__link:hover { background: var(--c-brand-soft); text-decoration: none; }
+.chapter-nav__link.is-current { background: var(--c-brand-soft); color: var(--c-brand-strong); font-weight: 800;
+  box-shadow: var(--inner-hi); }
+.chapter-nav__link .check { width: 18px; height: 18px; }
+.chapter-nav__link .check svg { width: 11px; height: 11px; }
+/* 章テストへのナビリンク（ページ一覧の下） */
+.chapter-nav__quiz { display: inline-flex; align-items: center; gap: var(--space-2);
+  color: var(--c-brand-strong); font-weight: 800; padding: var(--space-2) var(--space-3); }
+.chapter-nav__quiz svg { width: 15px; height: 15px; }
+
+.content-card { background: var(--grad-card); border: 1px solid var(--c-border); border-radius: var(--radius-xl);
+  padding: var(--space-6); box-shadow: var(--shadow-md), var(--inner-hi);
+  min-width: 0; }   /* グリッドトラック内で縮められるように（長行はターミナル内部でスクロール） */
+.content-card h1 { font-size: var(--fs-h1); margin-bottom: var(--space-4);
+  display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 .content-card h2 { font-size: var(--fs-h2); margin: var(--space-5) 0 var(--space-3); }
 .content-card p { margin-bottom: var(--space-4); }
-.content-card p:last-child { margin-bottom: 0; }
-.content-card ul, .content-card ol { margin: 0 0 var(--space-4); padding-left: var(--space-5); }
+.content-card ul, .content-card ol { margin: 0 0 var(--space-4); padding-left: 1.4em; }
 .content-card li { margin-bottom: var(--space-2); }
-.page-foot { display: flex; align-items: center; justify-content: space-between;
-  gap: var(--space-3); margin-top: var(--space-6); padding-top: var(--space-5);
-  border-top: 1px solid var(--c-border); flex-wrap: wrap; }
+.content-card li::marker { color: var(--c-brand); }
+.page-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  margin-top: var(--space-6); padding-top: var(--space-5); border-top: 1px solid var(--c-border); flex-wrap: wrap; }
 .read-toggle { display: inline-flex; align-items: center; gap: var(--space-2);
-  background: var(--c-surface-2); border: 1px solid var(--c-border); color: var(--c-text);
-  border-radius: var(--radius-pill); padding: var(--space-2) var(--space-4);
-  font-size: var(--fs-sm); font-weight: 700; min-height: 44px; transition: all var(--dur) var(--ease); }
+  background: #fff; border: 1px solid var(--c-border-strong); color: var(--c-text);
+  border-radius: var(--radius-pill); padding: var(--space-2) var(--space-4); font-size: var(--fs-sm);
+  font-weight: 800; min-height: 44px; box-shadow: var(--shadow-sm); transition: all var(--dur) var(--ease); }
+.read-toggle .check { width: 20px; height: 20px; }
 .read-toggle.is-done { background: var(--c-success-soft); border-color: var(--c-success); color: var(--c-success); }
-
-/* mobile chapter-nav (accordion) */
 .chapter-nav__mobile { display: none; }
 
 /* =========================================================================
-   Quiz (クイズ)
+   Quiz
    ========================================================================= */
-.quiz { background: var(--c-surface); border: 1px solid var(--c-border);
-  border-radius: var(--radius-lg); padding: var(--space-6); box-shadow: var(--shadow-sm);
-  max-width: 680px; }
+.quiz { background: var(--grad-card); border: 1px solid var(--c-border); border-radius: var(--radius-xl);
+  padding: var(--space-6); box-shadow: var(--shadow-md), var(--inner-hi); max-width: 680px; }
 .quiz__meta { display: flex; align-items: center; justify-content: space-between;
-  font-size: var(--fs-sm); color: var(--c-text-muted); margin-bottom: var(--space-3); }
-.quiz__q { font-size: var(--fs-h2); font-weight: 700; margin-bottom: var(--space-5); line-height: 1.5; }
+  font-size: var(--fs-sm); color: var(--c-text-muted); font-weight: 700; margin-bottom: var(--space-3); }
+.quiz__q { font-size: var(--fs-h2); font-weight: 800; margin-bottom: var(--space-5); line-height: 1.5; }
 .choice-list { display: flex; flex-direction: column; gap: var(--space-3); }
-.choice {
-  display: flex; align-items: center; gap: var(--space-3); width: 100%; text-align: left;
-  background: var(--c-surface); border: 2px solid var(--c-border); color: var(--c-text);
-  border-radius: var(--radius-md); padding: var(--space-4); font-size: var(--fs-body);
-  transition: all var(--dur) var(--ease);
-}
-.choice:hover:not(:disabled) { border-color: var(--c-accent-course, var(--c-brand)); transform: translateY(-1px); }
-.choice__marker {
-  width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--c-border-strong);
-  flex: none; display: grid; place-items: center; font-size: 13px; font-weight: 700;
-  color: var(--c-text-muted);
-}
+.choice { display: flex; align-items: center; gap: var(--space-3); width: 100%; text-align: left;
+  background: #fff; border: 2px solid var(--c-border); color: var(--c-text);
+  border-radius: var(--radius-lg); padding: var(--space-4); font-size: var(--fs-body);
+  box-shadow: var(--shadow-sm); transition: all var(--dur) var(--ease); }
+.choice:hover:not(:disabled) { border-color: var(--c-brand); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.choice__marker { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--c-border-strong);
+  flex: none; display: grid; place-items: center; font-size: 13px; font-weight: 800; color: var(--c-text-muted); }
 .choice__text { flex: 1; }
-.choice__result { font-size: 18px; flex: none; }
-/* 選択中（未判定）はテーマ色の枠＋soft地。判定後の正解/不正解は意味の色（緑/赤）のまま。 */
-.choice.is-selected { border-color: var(--c-accent-course, var(--c-brand)); background: var(--c-accent-course-soft, var(--c-brand-soft)); }
+.choice__result { flex: none; width: 22px; height: 22px; display: grid; place-items: center; }
+.choice__result svg { width: 20px; height: 20px; }
 .choice.is-correct { background: var(--c-success-soft); border-color: var(--c-success); }
 .choice.is-correct .choice__marker { background: var(--c-success); border-color: var(--c-success); color: #fff; }
 .choice.is-correct .choice__result { color: var(--c-success); }
@@ -540,63 +590,62 @@ button { font-family: inherit; cursor: pointer; }
 .choice.is-wrong .choice__marker { background: var(--c-danger); border-color: var(--c-danger); color: #fff; }
 .choice.is-wrong .choice__result { color: var(--c-danger); }
 .choice:disabled { cursor: default; }
-
-.quiz__feedback { margin-top: var(--space-5); padding: var(--space-4);
-  border-radius: var(--radius-md); font-size: var(--fs-sm); line-height: 1.7; display: none; }
+.quiz__feedback { margin-top: var(--space-5); padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg); font-size: var(--fs-sm); line-height: 1.7; display: none; box-shadow: var(--inner-hi); }
 .quiz__feedback.is-correct { display: block; background: var(--c-success-soft); }
 .quiz__feedback.is-wrong { display: block; background: var(--c-danger-soft); }
 .quiz__feedback strong { display: block; font-size: var(--fs-body); margin-bottom: var(--space-1); }
 .quiz__feedback.is-correct strong { color: var(--c-success); }
 .quiz__feedback.is-wrong strong { color: var(--c-danger); }
-.quiz__feedback .review-note { display: inline; color: inherit; font-size: inherit; margin: 0; }
+.quiz__feedback .review-note { display: inline; color: inherit; }
 
 /* クイズ結果サマリ */
-.quiz-result { text-align: center; max-width: 680px;
-  background: var(--c-surface); border: 1px solid var(--c-border);
-  border-radius: var(--radius-lg); padding: var(--space-7) var(--space-5); box-shadow: var(--shadow-sm); }
-.quiz-result__emoji { font-size: 48px; line-height: 1; }
-.quiz-result__score { font-size: var(--fs-display); font-weight: 700; margin: var(--space-3) 0; }
-/* スコアの数字は教材テーマ色（クイズはコーステーマ配下）。白地に≥4.5:1。 */
-.quiz-result__score b { color: var(--c-accent-course-strong, var(--c-brand-strong)); }
-.quiz-result__msg { color: var(--c-text-muted); margin-bottom: var(--space-5); }
-.quiz-result__actions { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
+.quiz-result { background: var(--grad-hero); border: 1px solid var(--c-border); border-radius: var(--radius-2xl);
+  padding: var(--space-7) var(--space-6); box-shadow: var(--shadow-md), var(--inner-hi); max-width: 680px;
+  text-align: center; position: relative; overflow: hidden; }
+.quiz-result__icon { width: 64px; height: 64px; margin: 0 auto var(--space-4); border-radius: 20px;
+  background: var(--grad-brand); color: #fff; display: grid; place-items: center;
+  box-shadow: var(--shadow-pink), var(--inner-hi-strong); }
+.quiz-result__icon svg { width: 34px; height: 34px; }
+.quiz-result__score { font-size: var(--fs-h2); font-weight: 800; }
+.quiz-result__score b { color: var(--c-brand-strong); font-size: 28px; }
+.quiz-result__msg { color: var(--c-text-muted); margin-top: var(--space-2); }
+.quiz-result__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center;
+  margin-top: var(--space-5); }
 
 /* =========================================================================
-   Review list (復習リスト)
+   Review list（復習リスト）
    ========================================================================= */
+.review-head { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); }
+.review-head h1 { font-size: var(--fs-h1); display: flex; align-items: center; gap: 8px; }
+.review-head .spark { width: 20px; height: 20px; color: #F58EC0; }
+.review-intro { color: var(--c-text-muted); font-size: var(--fs-sm); margin-bottom: var(--space-5); max-width: 680px; }
 .review-list { display: flex; flex-direction: column; gap: var(--space-4); max-width: 680px; }
-.review-card {
-  display: flex; align-items: center; gap: var(--space-4);
-  background: var(--c-surface); border: 1px solid var(--c-border);
-  border-left: 4px solid var(--c-danger); border-radius: var(--radius-md);
-  padding: var(--space-4) var(--space-5); box-shadow: var(--shadow-sm);
-}
-.review-card__icon { font-size: 28px; flex: none; }
+.review-card { display: flex; align-items: center; gap: var(--space-4);
+  background: var(--grad-card); border: 1px solid var(--c-border); border-radius: var(--radius-xl);
+  padding: var(--space-4) var(--space-5); box-shadow: var(--shadow-md), var(--inner-hi); }
+.review-card__icon { width: 48px; height: 48px; border-radius: 15px; flex: none; display: grid; place-items: center;
+  background: linear-gradient(150deg, #FCE0EC, #F8C5DD); color: var(--c-brand-strong); box-shadow: var(--inner-hi); }
+.review-card__icon svg { width: 26px; height: 26px; }
 .review-card__body { flex: 1; min-width: 0; }
-.review-card__topic { font-family: var(--font-mono); font-weight: 700; font-size: var(--fs-h3);
-  color: var(--c-brand-strong); }
+.review-card__tag { display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-xs); font-weight: 800;
+  color: var(--c-danger); background: var(--c-danger-soft); padding: 3px 9px; border-radius: var(--radius-pill); margin-bottom: 4px; }
+.review-card__tag svg { width: 12px; height: 12px; }
+.review-card__topic { font-family: var(--font-mono); font-weight: 800; font-size: var(--fs-h2); color: var(--c-brand-strong);
+  word-break: break-word; }
 .review-card__src { font-size: var(--fs-sm); color: var(--c-text-muted); margin-top: 2px; }
-.review-card__tag { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-xs);
-  font-weight: 700; color: var(--c-danger); background: var(--c-danger-soft);
-  padding: 2px 8px; border-radius: var(--radius-pill); margin-bottom: 4px; }
-.review-empty { text-align: center; padding: var(--space-8) var(--space-5);
-  background: var(--c-surface); border: 1px dashed var(--c-border-strong);
-  border-radius: var(--radius-lg); color: var(--c-text-muted); max-width: 680px; }
-.review-empty__emoji { font-size: 40px; }
-
-/* =========================================================================
-   Section header (画面共通の見出し行)
-   ========================================================================= */
-.section-head { display: flex; align-items: center; justify-content: space-between;
-  gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-5); }
-.section-head__title { font-size: var(--fs-h1); }
-.section-head .progress { min-width: 200px; flex: 1; max-width: 320px; }
-.lead { text-align: center; max-width: 560px; margin: 0 auto var(--space-6); }
-.lead h1 { font-size: var(--fs-display); margin-bottom: var(--space-3); }
-.lead p { color: var(--c-text-muted); }
-.view { padding: var(--space-6) 0; }
-.muted { color: var(--c-text-muted); }
-.faint { color: var(--c-text-faint); }
+.review-empty { position: relative; overflow: hidden; text-align: center; padding: var(--space-8) var(--space-5);
+  background: var(--grad-hero); border: 1px solid var(--c-border); border-radius: var(--radius-2xl);
+  color: var(--c-text-muted); max-width: 680px; box-shadow: var(--shadow-md), var(--inner-hi); }
+.review-empty__icon { width: 64px; height: 64px; margin: 0 auto var(--space-3); border-radius: 20px;
+  background: var(--grad-brand); color: #fff; display: grid; place-items: center;
+  box-shadow: var(--shadow-pink), var(--inner-hi-strong); }
+.review-empty__icon svg { width: 34px; height: 34px; }
+.review-empty p { margin-bottom: var(--space-2); }
+.review-empty__title { font-weight: 800; color: var(--c-text); margin-top: var(--space-2); }
+/* 空状態の隅 sparkle（装飾）。prototype のインライン装飾を class 化。 */
+.review-empty__spark1 { top: 18px; left: 24px; width: 16px; height: 16px; color: #F58EC0; }
+.review-empty__spark2 { top: 30px; right: 30px; width: 13px; height: 13px; color: #B398F0; }
 
 /* =========================================================================
    Responsive
@@ -605,65 +654,35 @@ button { font-family: inherit; cursor: pointer; }
   .learn { grid-template-columns: minmax(0, 1fr); }
   .chapter-nav { display: none; }
   .chapter-nav__mobile { display: block; margin-bottom: var(--space-4); }
-  .chapter-nav__mobile summary {
-    cursor: pointer; list-style: none; padding: var(--space-3) var(--space-4);
-    background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-md);
-    font-weight: 700; font-size: var(--fs-sm); display: flex; align-items: center; gap: var(--space-2);
-  }
+  .chapter-nav__mobile summary { cursor: pointer; list-style: none; padding: var(--space-3) var(--space-4);
+    background: #fff; border: 1px solid var(--c-border); border-radius: var(--radius-lg); font-weight: 800;
+    font-size: var(--fs-sm); display: flex; align-items: center; gap: var(--space-2); box-shadow: var(--shadow-sm); }
+  .chapter-nav__mobile summary svg { width: 17px; height: 17px; }
   .chapter-nav__mobile summary::-webkit-details-marker { display: none; }
   .chapter-nav__mobile summary::after { content: "▾"; margin-left: auto; color: var(--c-text-faint); }
   .chapter-nav__mobile[open] summary::after { content: "▴"; }
-  .chapter-nav__mobile .chapter-nav__list { margin-top: var(--space-2);
-    background: var(--c-surface); border: 1px solid var(--c-border);
-    border-radius: var(--radius-md); padding: var(--space-2); }
+  .chapter-nav__mobile .chapter-nav__list { margin-top: var(--space-2); background: #fff; border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg); padding: var(--space-2); box-shadow: var(--shadow-sm); }
 }
 @media (max-width: 640px) {
   .page-wrap { padding: 0 var(--space-4); }
+  .appbar { margin: var(--space-3) var(--space-4) 0; max-width: none; }
   .content-card, .quiz { padding: var(--space-5); }
-  .view { padding: var(--space-5) 0; }
+  .view { padding: var(--space-6) 0; }
   .course-grid { grid-template-columns: 1fr; }
+  .course-hero, .hero { padding: var(--space-5); }
   .page-foot { flex-direction: column-reverse; align-items: stretch; }
-  .page-foot .btn { width: 100%; }
-  .read-toggle { justify-content: center; }
-  :root { --fs-display: 24px; --fs-h1: 20px; }
+  .page-foot .btn, .page-foot .read-toggle { width: 100%; }
+  .hero { gap: var(--space-4); }
+  .progress-pill { width: 100%; }
+  .chapter-card { flex-wrap: wrap; }
+  .chapter-card__side { width: 100%; justify-content: space-between; }
+  .appnav a span { display: none; }   /* モバイルはアイコンのみ */
+  :root { --fs-display: 28px; --fs-h1: 21px; --fs-h2: 17px; }
 }
-
-/* =========================================================================
-   Iconography（emoji 廃止 → インラインSVG）
-   js/icons.js の Icon(name, opts) が返す <svg> をここで整える。
-   装飾アイコンは currentColor を継承し、文脈の色（ピンク/情報青/警告/成功）に染まる。
-   ロゴ（git / github / python / terminal）も同じ枠に収まるサイズで扱う。
-   ========================================================================= */
-.icon {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 1.15em; height: 1.15em; /* 既定はテキスト連動。size 指定時は属性が優先 */
-  vertical-align: -0.18em; /* テキストのベースラインに馴染ませる */
-  flex: none; line-height: 0;
-}
-.icon svg { display: block; width: 100%; height: 100%; }
-/* fill 系ロゴ（GitHub マーク等）も currentColor 追従にできるよう、
-   icons.js 側で fill="currentColor" を指定。stroke 系UIアイコンは stroke="currentColor"。 */
-
-/* テキストとアイコンを横並びにする時の最小ヘルパー（ラベル必須＝色だけに頼らない） */
-.with-icon { display: inline-flex; align-items: center; gap: var(--space-2); }
-
-/* 各スロットに SVG を入れたときのサイズ（従来 emoji/グリフ前提だった箇所の受け皿） */
-.callout__icon svg, .callout__icon .icon { width: 20px; height: 20px; }
-.review-card__icon svg, .review-card__icon .icon { width: 28px; height: 28px; }
-.choice__result svg, .choice__result .icon { width: 20px; height: 20px; }
-.check svg, .check .icon { width: 64%; height: 64%; }
-.chapter-card__arrow svg, .chapter-card__arrow .icon,
-.breadcrumb__sep svg, .breadcrumb__sep .icon { width: 18px; height: 18px; }
-.terminal__copy svg, .terminal__copy .icon { width: 15px; height: 15px; }
-/* お祝い/空状態の大アイコン（emoji 廃止 → 上品な SVG）。色は文脈で付与。 */
-.quiz-result__emoji svg, .quiz-result__emoji .icon { width: 48px; height: 48px; }
-.review-empty__emoji svg, .review-empty__emoji .icon { width: 40px; height: 40px; }
-
-/* reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; scroll-behavior: auto !important;
   }
+  .spark--anim { animation: none !important; }
 }
