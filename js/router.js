@@ -59,6 +59,32 @@
     return -1;
   }
 
+  /* ---------- テーマ（教材ごとのパステル配色）----------
+     各教材に「テーマクラス」を割り当て、画面ルート要素に付与する。
+     styles.css の .theme-terminal / .theme-git / .theme-python が
+     --c-accent-course* トークンを上書きし、配下のコンポーネントが
+     var(--c-accent-course, var(--c-brand)) 経由でその色を拾う。
+
+     データ駆動で拡張可能:
+       - 既定は course.id をそのまま使い "theme-<id>"（例 terminal→theme-terminal）。
+       - course に theme（クラス名）または color（任意の識別子）を持たせれば、
+         id と別のテーマ名にもできる（content/*.js 側で指定）。
+       - 新しい教材を足すときは styles.css に .theme-<id> を1ブロック追加するだけ。
+         未定義のテーマでもフォールバックで brand（ローズ）になり崩れない。 */
+  function themeClass(course) {
+    if (!course) return '';
+    var name = course.theme || course.color || course.id;
+    return name ? ('theme-' + name) : '';
+  }
+  // テーマクラスを付けた section の開きタグを返す（各 view 共通）。
+  function sectionOpen(course, extra) {
+    var cls = 'view screen';
+    var t = themeClass(course);
+    if (t) cls += ' ' + t;
+    if (extra) cls += ' ' + extra;
+    return '<section class="' + cls + '">';
+  }
+
   /* ---------- 共通パーツ ---------- */
   function breadcrumb(items) {
     // items: [{label, href?}] 最後は現在地
@@ -80,9 +106,13 @@
      ======================================================================= */
   function viewTop() {
     var cards = COURSES.map(function (course) {
+      // 各カードに自分の教材テーマを付与（TOPで水色/ピンク/黄色が同時に並ぶ）。
+      var theme = themeClass(course);
       if (course.comingSoon) {
+        // 準備中カードは淡色トーンが主役だが、ロゴタイルにはテーマ色を残して
+        // 「この教材は黄色」など個性が伝わるようにする（--soon 側で彩度は控えめに）。
         return '' +
-          '<article class="course-card course-card--soon" aria-disabled="true">' +
+          '<article class="course-card course-card--soon' + (theme ? ' ' + theme : '') + '" aria-disabled="true">' +
             '<div class="course-card__emoji" aria-hidden="true">' + Icon(course.icon, { size: 30 }) + '</div>' +
             '<h2 class="course-card__title">' + R.esc(course.title) + '</h2>' +
             '<p class="course-card__desc">' + R.esc(course.description) + '</p>' +
@@ -102,7 +132,7 @@
             : '<span class="badge badge--new">はじめる前</span>');
       var btnLabel = started ? '続きから' : 'はじめる';
       return '' +
-        '<article class="course-card">' +
+        '<article class="course-card' + (theme ? ' ' + theme : '') + '">' +
           '<div class="course-card__emoji" aria-hidden="true">' + Icon(course.icon, { size: 30 }) + '</div>' +
           '<h2 class="course-card__title">' + R.esc(course.title) + '</h2>' +
           '<p class="course-card__desc">' + R.inline(course.description) + '</p>' +
@@ -177,7 +207,7 @@
     }).join('');
 
     setHTML(
-      '<section class="view screen">' +
+      sectionOpen(course) +
         breadcrumb([
           { label: '教材', href: '#/' },
           { label: course.title }
@@ -274,7 +304,7 @@
     var navList = chapterNavList(course, chapter, page.id);
 
     setHTML(
-      '<section class="view screen" style="padding-top:var(--space-5);">' +
+      sectionOpen(course).replace('>', ' style="padding-top:var(--space-5);">') +
         breadcrumb([
           { label: course.title, href: '#/course/' + course.id },
           { label: '章' + chapterNum + ' ' + chapter.title, href: '#/page/' + course.id + '/' + chapter.id + '/' + chapter.pages[0].id },
@@ -370,7 +400,7 @@
     var state = { quiz: buildQuiz(), i: 0, correct: 0, answered: false };
 
     function shell(inner) {
-      return '<section class="view screen">' +
+      return sectionOpen(course) +
         breadcrumb([
           { label: course.title, href: '#/course/' + course.id },
           { label: chapter.title, href: '#/page/' + course.id + '/' + chapter.id + '/' + chapter.pages[0].id },

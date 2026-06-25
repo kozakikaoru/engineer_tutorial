@@ -80,6 +80,69 @@
 
   /* --- Breakpoints (reference) --- */
   --bp-sm: 640px; --bp-md: 960px;
+
+  /* --- 教材テーマカラー（既定 = サイト共通のローズ／brand）---
+     教材ごとに「パステルのテーマ色」を割り当てるための3トークン。
+     コンポーネントは var(--c-accent-course, var(--c-brand)) の形で参照し、
+     テーマクラス（.theme-terminal / .theme-git / .theme-python）が無い場所では
+     自動的に従来の brand（ローズ）にフォールバックする。
+       --c-accent-course        : 押せるCTA・進捗フィル・主アクセント（白文字がAAを満たす濃さ）
+       --c-accent-course-bright : .btn--primary グラデの明側ストップ（白文字AAを満たす濃さに留める）
+       --c-accent-course-soft   : パステルの“面”（現在地ナビ地・チップ地・ロゴタイル地・バッジ地）
+       --c-accent-course-strong : soft地／白地の上に乗る“文字”用の濃いめ（≥4.5:1）
+     既定はGit=brandと同値（サイト共通デフォルト）。 */
+  --c-accent-course:        var(--c-brand);
+  --c-accent-course-bright: var(--c-brand-bright);
+  --c-accent-course-soft:   var(--c-brand-soft);
+  --c-accent-course-strong: var(--c-brand-strong);
+}
+
+/* =========================================================================
+   教材テーマ（パステル3色を自然に散らす）
+   router.js が教材配下の画面ルート要素に .theme-<courseId> を付与する。
+   コースカードは各カードに自分のテーマを付ける（TOPで3色が同時に見える）。
+
+   配色は「面(soft)はパステルで軽やか／文字(strong)・CTA(accent)は濃さでAA確保」の
+   role 分担。全組み合わせを contrast checker で実測（本文・現在地ハイライト≥4.5:1、
+   ボタン白文字はグラデ全域で≥4.5:1）。
+   ※共通のセマンティック色（ヒント青/注意黄/正解緑/不正解赤）はテーマで上書きしない。
+   ========================================================================= */
+
+/* ── ターミナル = パステルスカイ（水色／シアン系） ──
+   accent #1577A0 : 白文字 5.03:1 ✅AA（CTA・進捗）
+   bright #16789F : 白文字 4.97:1 ✅AA（グラデ明側。accentより僅かに明るいだけに留める）
+   soft   #E1F3FA : パステルスカイの面
+   strong #0E6A8C : soft地 5.32:1 / 白地 6.07:1 ✅AA（現在地ハイライト文字・チップ文字）*/
+.theme-terminal {
+  --c-accent-course:        #1577A0;
+  --c-accent-course-bright: #16789F;
+  --c-accent-course-soft:   #E1F3FA;
+  --c-accent-course-strong: #0E6A8C;
+}
+
+/* ── Git = ローズ／ピンク（現ブランド色を活かす。サイト共通デフォルトと同値）──
+   accent #B54579 : 白文字 5.13:1 ✅AA
+   bright #BE4D85 : 白文字 4.58:1 ✅AA
+   soft   #FCE4EF : パステルピンクの面
+   strong #A83C6E : soft地 4.94:1 / 白地 5.94:1 ✅AA */
+.theme-git {
+  --c-accent-course:        #B54579;
+  --c-accent-course-bright: #BE4D85;
+  --c-accent-course-soft:   #FCE4EF;
+  --c-accent-course-strong: #A83C6E;
+}
+
+/* ── Python = パステルアンバー（黄色系）──
+   淡い黄色地に黄文字は破綻しやすいので、CTA/文字は“濃いアンバー”で受ける設計。
+   accent #7A5800 : 白文字 6.51:1 ✅AA（CTA・進捗）
+   bright #8A6300 : 白文字 5.43:1 ✅AA（グラデ明側）
+   soft   #FBEFC9 : パステルイエローの面
+   strong #7A5600 : soft地 5.79:1 / 白地 6.65:1 ✅AA（現在地ハイライト文字）*/
+.theme-python {
+  --c-accent-course:        #7A5800;
+  --c-accent-course-bright: #8A6300;
+  --c-accent-course-soft:   #FBEFC9;
+  --c-accent-course-strong: #7A5600;
 }
 
 /* =========================================================================
@@ -117,7 +180,9 @@ a { color: var(--c-brand-strong); text-decoration: none; }
 a:hover { text-decoration: underline; }
 button { font-family: inherit; cursor: pointer; }
 :focus-visible {
-  outline: 2px solid var(--c-brand);
+  /* フォーカスリングは維持。教材内ではその教材のテーマ色に染め、全体では brand に戻る。
+     どのテーマ色も白地で十分なコントラスト（sky 5.03 / rose 5.13 / amber 6.51:1 以上）。 */
+  outline: 2px solid var(--c-accent-course, var(--c-brand));
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -167,6 +232,9 @@ button { font-family: inherit; cursor: pointer; }
    ========================================================================= */
 .breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2);
   font-size: var(--fs-sm); color: var(--c-text-muted); margin-bottom: var(--space-4); }
+/* パンくずのリンクは教材内ではテーマ色（strong）に揃える（footer等の global a は据え置き）。
+   strong は白系地に≥4.5:1（sky 6.07 / rose 5.94 / amber 6.65:1）。 */
+.breadcrumb a { color: var(--c-accent-course-strong, var(--c-brand-strong)); }
 .breadcrumb__sep { color: var(--c-text-faint); }
 .breadcrumb [aria-current="page"] { color: var(--c-text); font-weight: 700; }
 
@@ -182,8 +250,11 @@ button { font-family: inherit; cursor: pointer; }
   text-decoration: none;
 }
 .btn:hover { text-decoration: none; }
-.btn--primary { background: linear-gradient(135deg, var(--c-brand-bright), var(--c-brand)); color: #fff; box-shadow: var(--shadow-brand); }
-.btn--primary:hover { background: linear-gradient(135deg, var(--c-brand), var(--c-brand-strong)); transform: translateY(-1px); }
+/* 主ボタン: テーマ色のグラデ（bright→accent）。
+   各テーマとも white×グラデ全域で ≥4.5:1（sky 4.97–5.03 / rose 4.58–5.13 / amber 5.43–6.51）。
+   淡い黄色をそのまま使うと白文字が破綻するため、amber はトークン側で濃いトーンに寄せて回避済み。 */
+.btn--primary { background: linear-gradient(135deg, var(--c-accent-course-bright, var(--c-brand-bright)), var(--c-accent-course, var(--c-brand))); color: #fff; box-shadow: var(--shadow-brand); }
+.btn--primary:hover { background: linear-gradient(135deg, var(--c-accent-course, var(--c-brand)), var(--c-accent-course-strong, var(--c-brand-strong))); transform: translateY(-1px); }
 .btn--primary:active { transform: translateY(0); box-shadow: var(--shadow-sm); }
 .btn--ghost { background: transparent; color: var(--c-text); border-color: var(--c-border-strong); }
 .btn--ghost:hover { background: var(--c-surface-2); }
@@ -200,7 +271,9 @@ button { font-family: inherit; cursor: pointer; }
 .progress { display: flex; align-items: center; gap: var(--space-3); }
 .progress__track { flex: 1; height: 8px; background: var(--c-surface-2);
   border-radius: var(--radius-pill); overflow: hidden; }
-.progress__fill { height: 100%; background: linear-gradient(90deg, var(--c-brand-bright), var(--c-brand)); border-radius: var(--radius-pill);
+.progress__fill { height: 100%;
+  background: linear-gradient(90deg, var(--c-accent-course-bright, var(--c-brand-bright)), var(--c-accent-course, var(--c-brand)));
+  border-radius: var(--radius-pill);
   transition: width var(--dur-slow) var(--ease); }
 .progress__label { font-size: var(--fs-sm); color: var(--c-text-muted); font-weight: 700;
   white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -213,7 +286,8 @@ button { font-family: inherit; cursor: pointer; }
 .badge--done { background: var(--c-success-soft); color: var(--c-success); }
 .badge--todo { background: var(--c-surface-2); color: var(--c-text-faint); }
 .badge--achievement { background: var(--c-accent-soft); color: var(--c-accent-strong); }
-.badge--new { background: var(--c-brand-soft); color: var(--c-brand-strong); }
+/* 「学習中／はじめる前」バッジ。教材テーマの soft地×strong文字（≥4.5:1）でカードと色を合わせる。 */
+.badge--new { background: var(--c-accent-course-soft, var(--c-brand-soft)); color: var(--c-accent-course-strong, var(--c-brand-strong)); }
 /* round check/empty marker */
 .check {
   width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center;
@@ -225,14 +299,17 @@ button { font-family: inherit; cursor: pointer; }
 /* =========================================================================
    Inline code + Term chip (用語チップ)
    ========================================================================= */
+/* インラインコード文字もテーマの strong に追従（教材内で色がそろう。白系地に≥4.5:1）。 */
 .code { font-family: var(--font-mono); font-size: var(--fs-sm);
-  background: var(--c-surface-2); color: var(--c-brand-strong);
+  background: var(--c-surface-2); color: var(--c-accent-course-strong, var(--c-brand-strong));
   padding: 2px 6px; border-radius: var(--radius-sm); }
 
 .term-chip { position: relative; display: inline-block; }
+/* 用語チップ: 文字はテーマ strong、下線はテーマ accent。教材ごとのアクセントになる。 */
 .term-chip__word {
-  border: none; background: none; padding: 0; font: inherit; color: var(--c-brand-strong);
-  border-bottom: 2px dotted var(--c-brand); cursor: help; line-height: 1.4;
+  border: none; background: none; padding: 0; font: inherit;
+  color: var(--c-accent-course-strong, var(--c-brand-strong));
+  border-bottom: 2px dotted var(--c-accent-course, var(--c-brand)); cursor: help; line-height: 1.4;
 }
 .term-chip__tip {
   position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%) translateY(4px);
@@ -322,7 +399,10 @@ button { font-family: inherit; cursor: pointer; }
   width: 52px; height: 52px; flex: none; line-height: 1;
   display: grid; place-items: center;
   border-radius: var(--radius-md);
-  background: var(--c-brand-soft); color: var(--c-brand-strong);
+  /* ロゴタイル地はテーマの soft、ロゴ字色は strong（soft地に≥4.5:1）。
+     TOPで 水色／ピンク／黄色のタイルが同時に並んで3色が一目で伝わる。 */
+  background: var(--c-accent-course-soft, var(--c-brand-soft));
+  color: var(--c-accent-course-strong, var(--c-brand-strong));
 }
 .course-card__emoji .icon, .course-card__emoji svg,
 .course-card__logo .icon, .course-card__logo svg { width: 30px; height: 30px; }
@@ -332,8 +412,13 @@ button { font-family: inherit; cursor: pointer; }
   gap: var(--space-3); margin-top: var(--space-2); }
 .course-card--soon { background: var(--c-surface-2); box-shadow: none; }
 .course-card--soon:hover { transform: none; box-shadow: none; }
+/* 準備中でもロゴタイルにはテーマ soft を残し「この教材は黄色」と伝える。
+   ただし“まだ準備中”感を保つため、彩度は opacity で落とし、グリフは faint に。 */
 .course-card--soon .course-card__emoji,
-.course-card--soon .course-card__logo { background: var(--c-surface); color: var(--c-text-faint); opacity: .8; }
+.course-card--soon .course-card__logo {
+  background: var(--c-accent-course-soft, var(--c-surface));
+  color: var(--c-text-faint); opacity: .65;
+}
 .course-card--soon .course-card__title { color: var(--c-text-muted); }
 
 /* =========================================================================
@@ -352,7 +437,8 @@ button { font-family: inherit; cursor: pointer; }
   border-color: var(--c-border-strong); text-decoration: none; }
 .chapter-card__num {
   width: 40px; height: 40px; border-radius: var(--radius-md); flex: none;
-  background: var(--c-brand-soft); color: var(--c-brand-strong);
+  background: var(--c-accent-course-soft, var(--c-brand-soft));
+  color: var(--c-accent-course-strong, var(--c-brand-strong));
   display: grid; place-items: center; font-weight: 700; font-size: var(--fs-h3);
 }
 .chapter-card__body { flex: 1; min-width: 0; }
@@ -387,8 +473,17 @@ button { font-family: inherit; cursor: pointer; }
   color: var(--c-text); text-decoration: none; border-left: 3px solid transparent;
 }
 .chapter-nav__link:hover { background: var(--c-surface-2); text-decoration: none; }
-.chapter-nav__link.is-current { background: var(--c-brand-soft); color: var(--c-brand-strong);
-  font-weight: 700; border-left-color: var(--c-brand); }
+/* 現在ページ = テーマの soft地 + strong文字 + テーマ色の左バー。
+   旧実装はピンク地にピンク文字で見にくかった（コントラスト不足）ため、
+   「淡い面 × 濃い文字（≥4.5:1）× 太字 × 3px左バー」で各教材ともはっきり見せる。
+   実測: 水色 strong#0E6A8C on soft#E1F3FA =5.32:1 / 黄 #7A5600 on #FBEFC9 =5.79:1 /
+        ピンク #A83C6E on #FCE4EF =4.94:1 すべて ✅AA。 */
+.chapter-nav__link.is-current {
+  background: var(--c-accent-course-soft, var(--c-brand-soft));
+  color: var(--c-accent-course-strong, var(--c-brand-strong));
+  font-weight: 700;
+  border-left-color: var(--c-accent-course, var(--c-brand));
+}
 .chapter-nav__link .check { width: 16px; height: 16px; font-size: 10px; }
 .chapter-nav__quiz { margin-top: var(--space-2); }
 
@@ -428,7 +523,7 @@ button { font-family: inherit; cursor: pointer; }
   border-radius: var(--radius-md); padding: var(--space-4); font-size: var(--fs-body);
   transition: all var(--dur) var(--ease);
 }
-.choice:hover:not(:disabled) { border-color: var(--c-brand); transform: translateY(-1px); }
+.choice:hover:not(:disabled) { border-color: var(--c-accent-course, var(--c-brand)); transform: translateY(-1px); }
 .choice__marker {
   width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--c-border-strong);
   flex: none; display: grid; place-items: center; font-size: 13px; font-weight: 700;
@@ -436,7 +531,8 @@ button { font-family: inherit; cursor: pointer; }
 }
 .choice__text { flex: 1; }
 .choice__result { font-size: 18px; flex: none; }
-.choice.is-selected { border-color: var(--c-brand); background: var(--c-brand-soft); }
+/* 選択中（未判定）はテーマ色の枠＋soft地。判定後の正解/不正解は意味の色（緑/赤）のまま。 */
+.choice.is-selected { border-color: var(--c-accent-course, var(--c-brand)); background: var(--c-accent-course-soft, var(--c-brand-soft)); }
 .choice.is-correct { background: var(--c-success-soft); border-color: var(--c-success); }
 .choice.is-correct .choice__marker { background: var(--c-success); border-color: var(--c-success); color: #fff; }
 .choice.is-correct .choice__result { color: var(--c-success); }
@@ -460,7 +556,8 @@ button { font-family: inherit; cursor: pointer; }
   border-radius: var(--radius-lg); padding: var(--space-7) var(--space-5); box-shadow: var(--shadow-sm); }
 .quiz-result__emoji { font-size: 48px; line-height: 1; }
 .quiz-result__score { font-size: var(--fs-display); font-weight: 700; margin: var(--space-3) 0; }
-.quiz-result__score b { color: var(--c-brand); }
+/* スコアの数字は教材テーマ色（クイズはコーステーマ配下）。白地に≥4.5:1。 */
+.quiz-result__score b { color: var(--c-accent-course-strong, var(--c-brand-strong)); }
 .quiz-result__msg { color: var(--c-text-muted); margin-bottom: var(--space-5); }
 .quiz-result__actions { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
 
