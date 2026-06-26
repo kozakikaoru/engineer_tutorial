@@ -313,43 +313,29 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
 .appfoot a { color: var(--c-text-muted); }
 
 /* =========================================================================
-   レッスンページのハンバーガー＋ドロワー（YouTube風 / a11y）
-   - 既定（ホーム/章一覧/復習リスト）: ハンバーガー/暗幕/ドロワーは出さない＝サイドバー常時表示。
-   - body.is-lesson（#/page/...）: グローバルサイドバーを隠し、左上に ☰ を固定。
-     ☰ → 左からドロワー＋暗幕。Esc/外側/×/再クリックで閉じる（JS）。
+   ナビ: 広い画面は左サイドバーを常時表示（全ページ共通＝レッスンページも）。
+   狭い画面(≤960px)では上部ヘッダーに ☰＋サイト名を出し、☰ → 左ドロワー（YouTube風）に畳む。
    ========================================================================= */
-/* 既定は全部非表示。is-lesson のときだけ出す。 */
+/* ヘッダーバー（☰＋サイト名）。広い画面では非表示（サイドバーを使う）。
+   ≤960px の media query で display:flex にしてヘッダーとして出す。 */
 .lesson-bar { display: none; }
 .nav-scrim  { display: none; }
 
-/* --- レッスンモード: サイドバーを隠して1カラムに、☰＋サイト名バーを出す --- */
-body.is-lesson .sidebar { display: none; }
-body.is-lesson .app-shell { grid-template-columns: minmax(0, 1fr); }
-/* 左上の固定バー（☰＋サイト名）に本文が被らないよう、レッスンの本文を下げる。 */
-body.is-lesson #app { padding-top: 74px; }
-
-/* ☰ ＋ サイト名（クリックでホーム）のバー。左上に固定。 */
-body.is-lesson .lesson-bar {
-  display: inline-flex; align-items: center; gap: var(--space-2);
-  position: fixed; top: var(--space-4); left: var(--space-4); z-index: 60;
-}
+/* ハンバーガー☰ … 白いボタン枠は付けず、アイコンをそのまま置く（hover だけ淡く） */
 .nav-toggle {
   display: inline-grid; place-items: center;
-  width: 46px; height: 46px; border-radius: 14px;
-  background: var(--c-surface); color: var(--c-brand-strong);
-  border: 1px solid var(--c-border);
-  box-shadow: var(--shadow-md), var(--inner-hi);
-  transition: transform var(--dur) var(--ease), background var(--dur) var(--ease);
+  width: 44px; height: 44px; border-radius: var(--radius-md);
+  background: transparent; border: none; color: var(--c-brand-strong);
+  transition: background var(--dur) var(--ease);
 }
-.nav-toggle:hover { background: var(--c-brand-soft); transform: translateY(-1px); }
+.nav-toggle:hover { background: var(--c-brand-soft); }
+.nav-toggle__icon { width: 26px; height: 26px; display: grid; place-items: center; }
+.nav-toggle__icon svg { width: 26px; height: 26px; }
+/* サイト名（クリックでホーム）… ボタン枠なし＝そのままのテキスト */
 .lesson-bar__brand {
   font-weight: 800; font-size: var(--fs-h3); color: var(--c-text); text-decoration: none;
-  padding: 8px 12px; border-radius: var(--radius-md);
-  background: var(--c-surface); border: 1px solid var(--c-border); box-shadow: var(--shadow-sm);
 }
-.lesson-bar__brand:hover { color: var(--c-brand-strong); background: var(--c-brand-soft); text-decoration: none; }
-.nav-toggle__icon { width: 24px; height: 24px; display: grid; place-items: center; }
-.nav-toggle__icon svg { width: 24px; height: 24px; }
+.lesson-bar__brand:hover { color: var(--c-brand-strong); text-decoration: none; }
 
 /* 暗幕（ドロワーの外側）。fade in/out。hidden 属性で完全に外す。 */
 .nav-scrim {
@@ -1003,25 +989,18 @@ a.cat-card__title-link:hover { color: var(--c-brand-strong); text-decoration: no
    Responsive
    ========================================================================= */
 @media (max-width: 960px) {
-  /* サイドバーを上部のコンパクトバーに畳む。フルハイトのレールを解除し、
-     1行のヘッダーに：ロゴ＋メニュー横並び。下部の積乱雲は畳んだ状態では隠す。 */
+  /* 狭い画面: 左サイドバーは隠し、上部ヘッダー(☰＋サイト名)を出す。nav はドロワーへ畳む。 */
   .app-shell { grid-template-columns: minmax(0, 1fr); min-height: 0; }
-  .sidebar { border-right: none; border-bottom: 1px solid var(--c-border); box-shadow: var(--shadow-sm); }
-  .sidebar__inner { position: static; height: auto; overflow: visible;
-    flex-direction: row; align-items: center; gap: var(--space-3);
-    padding: var(--space-3) var(--space-4); }
-  .sidebar__logo { margin: 0 auto 0 var(--space-1); }
-  .sidenav { flex-direction: row; align-items: center; gap: var(--space-1); flex-wrap: nowrap; }
-  .sidenav__item { padding: var(--space-2) var(--space-3); border-radius: var(--radius-pill); }
-  .sidebar__cumulo { display: none; }  /* 畳んだバーには出さない */
+  .sidebar { display: none; }
+  .lesson-bar {
+    display: flex; align-items: center; gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--c-surface); border-bottom: 1px solid var(--c-border);
+  }
   .app-shell > .page-wrap { padding: var(--space-5) var(--space-5) var(--space-7); }
 
   /* カテゴリカード: 3列 → 2列 */
   .cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
-  /* レッスンモード（モバイル）: サイドバー(上部バー)は隠したまま、☰ は固定で出す。
-     本文上部に☰の高さぶん余白を確保し、ボタンと見出しが重ならないようにする。 */
-  body.is-lesson .app-shell > .page-wrap { padding-top: 74px; }
 
   .learn { grid-template-columns: minmax(0, 1fr); }
   .chapter-nav { display: none; }
