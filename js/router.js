@@ -246,7 +246,7 @@
     var progressBlock =
       '<div class="cat-card__progress">' +
         '<div class="progress__track"><div class="progress__fill" style="width:' + pctNow + '%"></div></div>' +
-        '<span class="cat-card__count">' + prog.done + '/' + prog.total + ' コマンド</span>' +
+        '<span class="cat-card__count">' + prog.done + '/' + prog.total + '</span>' +
       '</div>';
 
     // ボタンは「はじめる →」のみ（「はじめる前に」は廃止）。

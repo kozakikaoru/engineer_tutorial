@@ -282,23 +282,24 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
    2枚を前後にずらして重ね、奥(lav)＋手前(pink)で厚みを出す。 */
 .sidebar__cumulo {
   position: relative; margin-top: auto;
-  height: 120px;                 /* 見える“窓”の高さ。これ以下しか覗かせない */
+  height: 280px;                 /* 見える“窓”の高さ。これ以下しか覗かせない（巨大雲ぶん拡大） */
   margin-left: calc(var(--space-4) * -1);   /* サイドバー左パディングを相殺して端まで */
   margin-right: calc(var(--space-4) * -1);
 }
+/* 雲を大きく拡大。サイドバー幅(280px)を大きく超える“巨大積乱雲”の上側（puffy な頭）だけが覗く。 */
 .sidebar__cumulo-img {
-  position: absolute; left: 50%; bottom: -150px;   /* 下端を窓の外へ＝上側だけ見せる */
-  width: 300px; transform: translateX(-50%);
-  animation: float-cloud 16s var(--ease) infinite;
+  position: absolute; left: 50%; bottom: -360px;   /* 下端を窓の外へ＝上側だけ見せる */
+  width: 780px; transform: translateX(-50%);
+  animation: float-cloud 22s var(--ease) infinite;
 }
 .sidebar__cumulo-img svg { width: 100%; height: auto; display: block; }
 /* 奥の雲（ラベンダー）：少し上・左にずらし、淡く大きく */
-.sidebar__cumulo-img--back  { width: 330px; bottom: -140px; margin-left: -26px;
-  color: #ECE3FB; opacity: .85; animation-delay: -7s; }
+.sidebar__cumulo-img--back  { width: 880px; bottom: -330px; margin-left: -80px;
+  color: #ECE3FB; opacity: .85; animation-delay: -9s; }
 /* 手前の雲（ピンク）：基準位置・しっかりした淡ピンク */
 .sidebar__cumulo-img--front { color: #FBDCEC; }
 .sidebar__cumulo-spark {
-  position: absolute; left: 52%; bottom: 78px; width: 16px; height: 16px;
+  position: absolute; left: 52%; bottom: 215px; width: 18px; height: 18px;
   color: #F58EC0; animation: twinkle 3.2s var(--ease) infinite;
 }
 .sidebar__cumulo-spark svg { width: 100%; height: 100%; }
@@ -709,13 +710,21 @@ body.is-lesson .lesson-bar {
 }
 .cat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg), var(--inner-hi); }
 
-/* 右上の折れ角（page-curl）。三角の“めくれ”＋淡い影で付箋感。装飾。 */
+/* 右上の“紙がめくれた”角（page peel）。右上の三角＝めくれた紙片の裏面（淡グラデ）。
+   下に落とす影で「浮き上がってめくれている」感を出す。装飾。 */
 .cat-card__dogear {
-  position: absolute; top: 0; right: 0; width: 38px; height: 38px;
-  background: linear-gradient(135deg, #FFFFFF 0%, #FDEAF3 48%, #F6CFE0 50%, #F2BFD6 100%);
-  border-bottom-left-radius: 12px;
-  box-shadow: -2px 2px 5px rgba(120,40,80,.12);
-  border-left: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border);
+  position: absolute; top: 0; right: 0; width: 56px; height: 56px; z-index: 2;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);          /* 右上の三角だけ表示＝めくれた紙片 */
+  border-top-right-radius: var(--radius-2xl);          /* カード角に合わせて丸める */
+  /* めくれた裏面：折り目側は濃いピンク → カールの先端へ淡く（光を受けて持ち上がる紙片） */
+  background: linear-gradient(48deg, #D981B0 0%, #ECAECC 34%, #F6CCE0 64%, #FCE6F0 100%);
+  box-shadow: -9px 10px 16px -3px rgba(120, 30, 70, .34);
+}
+/* 折り目の濃い影：紙片がめくれて空いた“へこみ”を、対角線（折り目）に沿った影で示す。 */
+.cat-card__dogear::after {
+  content: ""; position: absolute; inset: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  background: linear-gradient(48deg, rgba(110,25,65,.32) 0%, rgba(110,25,65,0) 16%);
 }
 /* 右上の小 sparkle（折れ角の脇。白〜ピンクの装飾） */
 .cat-card__spark { position: absolute; top: 12px; right: 46px; width: 15px; height: 15px; color: #F49ECB; }
