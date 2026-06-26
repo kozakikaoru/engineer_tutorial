@@ -334,12 +334,24 @@
               '<p class="course-hero__tag">' + R.esc(courseTagline(course)) + '</p>' +
               progressBar +
             '</div>' +
-            stepper(course) +
           '</div>' +
+          // ステップは説明の横ではなく独立した横1行に。章が増えても（〜15章+）、
+          // 収まる時は全幅にスパン、はみ出す時は横スクロール（レイアウトは崩れない）。
+          '<div class="course-hero__steps">' + stepper(course) + '</div>' +
           '<div class="chapter-list">' + chapters + '</div>' +
         '</article>' +
       '</section>'
     );
+
+    // ステップが横スクロールする場合、現在地のノードが見えるよう寄せる（先頭付近なら 0 のまま）。
+    try {
+      var stepsWrap = rootEl.querySelector('.course-hero__steps');
+      var curNode = rootEl.querySelector('.course-hero__steps .stepper__node--current');
+      if (stepsWrap && curNode) {
+        var nodeLeft = curNode.getBoundingClientRect().left - stepsWrap.getBoundingClientRect().left + stepsWrap.scrollLeft;
+        stepsWrap.scrollLeft = Math.max(0, nodeLeft - stepsWrap.clientWidth / 2 + curNode.offsetWidth / 2);
+      }
+    } catch (e) {}
   }
 
   /* =======================================================================
