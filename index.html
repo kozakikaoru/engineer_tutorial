@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="エンジニア1年生向け。git とターミナルの基本コマンドを、1ページ1コマンドの小さなステップでやさしく学べる学習サイトです。">
 <title>TermLearn — git &amp; ターミナル 学習チュートリアル</title>
-<link rel="stylesheet" href="styles.css?v=20260626e">
+<link rel="stylesheet" href="styles.css?v=20260626f">
 </head>
 <body>
 
@@ -34,11 +34,50 @@
      =========================================================================== -->
 <div class="app-shell">
 
+  <!-- ===========================================================================
+       レッスンページ専用のハンバーガー（YouTube風）。
+       - 既定は非表示。body.is-lesson のときだけ左上に固定表示（CSS）。
+       - ☰ クリックで左からグローバルメニューがドロワー（暗幕付き）でスライド出現。
+       - 再クリック/外側クリック/Esc で閉じる。aria-expanded・フォーカストラップ対応（bootstrap JS）。
+       - ドロワー本体はサイドバーと同じ「ホーム/復習リスト」を持つ（グローバルメニュー）。
+       =========================================================================== -->
+  <button id="navToggle" class="nav-toggle" type="button"
+          aria-label="メニューを開く" aria-expanded="false" aria-controls="navDrawer" aria-haspopup="menu">
+    <span class="nav-toggle__icon" aria-hidden="true" data-icon="menu"></span>
+  </button>
+
+  <!-- 暗幕（ドロワーの外側）。クリックで閉じる。 -->
+  <div id="navScrim" class="nav-scrim" hidden></div>
+
+  <!-- 左からスライドするドロワー（グローバルメニュー）。aria-hidden をJSでトグル。 -->
+  <div id="navDrawer" class="nav-drawer" role="dialog" aria-modal="true" aria-label="メインメニュー" aria-hidden="true">
+    <div class="nav-drawer__head">
+      <a class="logo nav-drawer__logo" href="#/" aria-label="TermLearn ホームへ">
+        <span class="logo__mark" aria-hidden="true"></span>
+        <span class="logo__name">TermLearn</span>
+      </a>
+      <button id="navClose" class="nav-drawer__close" type="button" aria-label="メニューを閉じる">
+        <span aria-hidden="true" data-icon="close"></span>
+      </button>
+    </div>
+    <nav class="sidenav nav-drawer__nav" aria-label="メインメニュー">
+      <a id="navHomeDrawer" class="sidenav__item" href="#/">
+        <span class="sidenav__icon" aria-hidden="true" data-icon="home"></span>
+        <span class="sidenav__label">ホーム</span>
+      </a>
+      <a id="navReviewDrawer" class="sidenav__item" href="#/review">
+        <span class="sidenav__icon" aria-hidden="true" data-icon="list"></span>
+        <span class="sidenav__label">復習リスト</span>
+        <span id="reviewBadgeDrawer" class="sidenav__count" style="display:none;"><span id="reviewCountDrawer">0</span></span>
+      </a>
+    </nav>
+  </div>
+
   <!-- ===== 左サイドバー（フルハイト・縦メニュー） =====
-            実遷移＝ホーム/復習リストのみ。ロードマップ/ブックマーク/設定は遷移しない
-            プレースホルダだが「見た目は同じ」。押せるのに何も起きないダミーリンクは不可なので、
-            role を持たせず aria-disabled + cursor:default で操作対象から外す（dead click 無反応）。 -->
-  <aside class="sidebar" aria-label="サイドバー">
+            グローバルメニュー＝ホーム/復習リストの2項目だけ（ロードマップ/ブックマーク/設定は削除）。
+            このサイドバーはホーム/章一覧/復習リストで常時表示。レッスンページ(#/page/...)では
+            CSS（body.is-lesson）で隠し、左上のハンバーガー☰からドロワーで開く（YouTube風）。 -->
+  <aside class="sidebar" aria-label="サイドバー" id="sidebar">
     <div class="sidebar__inner">
       <a class="sidebar__logo logo" href="#/" aria-label="TermLearn ホームへ">
         <span class="logo__mark" aria-hidden="true"></span>
@@ -50,43 +89,20 @@
           <span class="sidenav__icon" aria-hidden="true" data-icon="home"></span>
           <span class="sidenav__label">ホーム</span>
         </a>
-        <span class="sidenav__item is-soon" aria-disabled="true">
-          <span class="sidenav__icon" aria-hidden="true" data-icon="map"></span>
-          <span class="sidenav__label">学習ロードマップ</span>
-        </span>
         <a id="navReview" class="sidenav__item" href="#/review">
           <span class="sidenav__icon" aria-hidden="true" data-icon="list"></span>
           <span class="sidenav__label">復習リスト</span>
           <span id="reviewBadge" class="sidenav__count" style="display:none;"><span id="reviewCount">0</span></span>
         </a>
-        <span class="sidenav__item is-soon" aria-disabled="true">
-          <span class="sidenav__icon" aria-hidden="true" data-icon="bookmark"></span>
-          <span class="sidenav__label">ブックマーク</span>
-        </span>
-        <span class="sidenav__item is-soon" aria-disabled="true">
-          <span class="sidenav__icon" aria-hidden="true" data-icon="settings"></span>
-          <span class="sidenav__label">設定</span>
-        </span>
       </nav>
 
-      <hr class="sidebar__divider" aria-hidden="true">
-
-      <!-- 学習の連続記録カード（炎＋小ラベル＋大きな日数）。値は固定 "7"（忠実再現）。 -->
-      <div class="streak" aria-label="学習の連続記録 7日連続">
-        <span class="streak__icon" aria-hidden="true" data-icon="flame"></span>
-        <div class="streak__body">
-          <div class="streak__label">学習の連続記録</div>
-          <div class="streak__value">7 <span class="streak__unit">日連続！</span></div>
-        </div>
-      </div>
-
-      <!-- 最下部のやわらかいパステル雲イラスト（ピンク＋ラベンダーの重なり雲・装飾）。
-           margin-top:auto で押し下げ、はみ出しは sidebar の overflow:hidden で切る。
-           メニュー/連続記録カードに絶対に被らないよう最下部に収める。PC のみ表示。 -->
-      <div class="sidebar__cloud" aria-hidden="true">
-        <span class="sidebar__cloud-spark" data-icon="spark"></span>
-        <span class="sidebar__cloud-img sidebar__cloud-img--lav" data-icon="cloud"></span>
-        <span class="sidebar__cloud-img sidebar__cloud-img--pink" data-icon="cloud"></span>
+      <!-- 最下部：サイドバーに収まりきらない“巨大積乱雲(cumulonimbus)の上側の一部”だけが覗く装飾。
+           残りはサイドバー下端の overflow:hidden で隠れ、雲の大きさを想像させる。PC のみ表示。
+           やわらかいパステル・装飾なので aria-hidden、reduced-motion でアニメ停止。 -->
+      <div class="sidebar__cumulo" aria-hidden="true">
+        <span class="sidebar__cumulo-spark" data-icon="spark"></span>
+        <span class="sidebar__cumulo-img sidebar__cumulo-img--back" data-icon="cumulonimbus"></span>
+        <span class="sidebar__cumulo-img sidebar__cumulo-img--front" data-icon="cumulonimbus"></span>
       </div>
     </div>
   </aside>
@@ -112,20 +128,21 @@
     → file:// で開いたときに CORS で読めなくなるため。
   各ファイルは window に登録して連携する。
 -->
-<script src="js/glossary.js?v=20260626e"></script>
-<script src="js/store.js?v=20260626e"></script>
-<script src="js/icons.js?v=20260626e"></script>
-<script src="js/render.js?v=20260626e"></script>
+<script src="js/glossary.js?v=20260626f"></script>
+<script src="js/store.js?v=20260626f"></script>
+<script src="js/icons.js?v=20260626f"></script>
+<script src="js/render.js?v=20260626f"></script>
 <!-- コンテンツ（教材を増やすときはここに1行追加するだけ） -->
 <script>window.COURSES = window.COURSES || [];</script>
-<script src="content/terminal.js?v=20260626e"></script>
-<script src="content/git.js?v=20260626e"></script>
-<script src="content/coming-soon.js?v=20260626e"></script>
+<script src="content/terminal.js?v=20260626f"></script>
+<script src="content/git.js?v=20260626f"></script>
+<script src="content/coming-soon.js?v=20260626f"></script>
 <!-- ルーター（最後。COURSES が出そろってから起動） -->
-<script src="js/router.js?v=20260626e"></script>
+<script src="js/router.js?v=20260626f"></script>
 
-<!-- サイドバー/フッター/背景装飾の SVG・nav 現在地は、icons.js / store.js が出そろってから整える。
-     復習件数(reviewBadge/reviewCount)は router.js が route 毎に updateReviewBadge() で最新化する。 -->
+<!-- サイドバー/ドロワー/フッター/背景装飾の SVG・nav 現在地・レッスンモード・ハンバーガーは、
+     icons.js / store.js が出そろってから整える。
+     復習件数は router.js が route 毎に updateReviewBadge() でサイドバー＋ドロワー両方を最新化する。 -->
 <script>
   (function () {
     function fillIcons() {
@@ -140,26 +157,118 @@
       }
     }
     function fillLogoMark() {
-      // ロゴマーク: 公式ロゴ路線。terminal アイコンを差し込む（装飾＝隣に "TermLearn" 表記あり）。
-      var mark = document.querySelector('.logo__mark');
-      if (mark && window.Icon && !mark.getAttribute('data-icon-done')) {
-        mark.innerHTML = window.Icon('terminal');
-        mark.setAttribute('data-icon-done', '1');
+      // ロゴマーク（サイドバー＋ドロワーの2か所）。terminal ロゴを差し込む（隣に "TermLearn" 表記あり）。
+      var marks = document.querySelectorAll('.logo__mark');
+      for (var i = 0; i < marks.length; i++) {
+        var mark = marks[i];
+        if (window.Icon && !mark.getAttribute('data-icon-done')) {
+          mark.innerHTML = window.Icon('terminal');
+          mark.setAttribute('data-icon-done', '1');
+        }
       }
     }
-    // nav の現在地ハイライト（ホーム系か 復習リストか）。ダミーではなく実在の2遷移先のみ。
+    // 現在のルートがレッスンページ(#/page/...)か。
+    function isLessonRoute() {
+      var h = (window.location.hash || '').replace(/^#/, '');
+      return h.replace(/^\//, '').split('/')[0] === 'page';
+    }
+    // nav の現在地ハイライト（ホーム系か 復習リストか）。サイドバー＋ドロワーの両方に反映。
     function updateNavCurrent() {
       var h = (window.location.hash || '').replace(/^#/, '');
       var isReview = (h.replace(/^\//, '').split('/')[0] === 'review');
-      var home = document.getElementById('navHome');
-      var review = document.getElementById('navReview');
-      if (home) { home.classList.toggle('is-current', !isReview); home.removeAttribute('aria-current'); if (!isReview) home.setAttribute('aria-current', 'page'); }
-      if (review) { review.classList.toggle('is-current', isReview); review.removeAttribute('aria-current'); if (isReview) review.setAttribute('aria-current', 'page'); }
+      [['navHome', 'navReview'], ['navHomeDrawer', 'navReviewDrawer']].forEach(function (ids) {
+        var home = document.getElementById(ids[0]);
+        var review = document.getElementById(ids[1]);
+        if (home) { home.classList.toggle('is-current', !isReview); home.removeAttribute('aria-current'); if (!isReview) home.setAttribute('aria-current', 'page'); }
+        if (review) { review.classList.toggle('is-current', isReview); review.removeAttribute('aria-current'); if (isReview) review.setAttribute('aria-current', 'page'); }
+      });
     }
+
+    /* ===== レッスンページのハンバーガー・ドロワー（YouTube風 / a11y） =====
+       開く: ☰ クリック。閉じる: 再クリック / 暗幕クリック / × / Esc。
+       aria-expanded（ボタン）・aria-hidden（ドロワー）を同期。フォーカストラップ＋復帰。 */
+    var toggleBtn = document.getElementById('navToggle');
+    var drawer    = document.getElementById('navDrawer');
+    var scrim     = document.getElementById('navScrim');
+    var closeBtn  = document.getElementById('navClose');
+    var lastFocus = null;
+    var drawerOpen = false;
+
+    function focusables() {
+      if (!drawer) return [];
+      return Array.prototype.slice.call(
+        drawer.querySelectorAll('a[href], button:not([disabled])')
+      ).filter(function (el) { return el.offsetParent !== null; });
+    }
+    function openDrawer() {
+      if (!drawer || drawerOpen) return;
+      drawerOpen = true;
+      lastFocus = document.activeElement;
+      if (scrim) scrim.hidden = false;
+      // aria-hidden=false が開の“正”（CSS はこれでスライドイン）。クラスは scrim フェード用に補助的に付ける。
+      drawer.setAttribute('aria-hidden', 'false');
+      drawer.classList.add('is-open');
+      requestAnimationFrame(function () {
+        document.body.classList.add('drawer-open');
+        if (scrim) scrim.classList.add('is-open');
+      });
+      if (toggleBtn) { toggleBtn.setAttribute('aria-expanded', 'true'); toggleBtn.setAttribute('aria-label', 'メニューを閉じる'); }
+      var f = focusables();
+      if (f.length) f[0].focus();
+    }
+    // 閉じる。DOM の後始末は drawerOpen の値に依らず必ず実行（状態 desync を残さない）。
+    function closeDrawer(restore) {
+      if (!drawer) return;
+      var wasOpen = drawerOpen;
+      drawerOpen = false;
+      document.body.classList.remove('drawer-open');
+      drawer.classList.remove('is-open');
+      if (scrim) scrim.classList.remove('is-open');
+      drawer.setAttribute('aria-hidden', 'true');
+      if (toggleBtn) { toggleBtn.setAttribute('aria-expanded', 'false'); toggleBtn.setAttribute('aria-label', 'メニューを開く'); }
+      // transition 後に暗幕を DOM から外す（クリックを通さない）
+      window.setTimeout(function () { if (!drawerOpen && scrim) scrim.hidden = true; }, 260);
+      if (wasOpen && restore !== false && lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+    function toggleDrawer() { drawerOpen ? closeDrawer() : openDrawer(); }
+
+    if (toggleBtn) toggleBtn.addEventListener('click', toggleDrawer);
+    if (closeBtn)  closeBtn.addEventListener('click', function () { closeDrawer(); });
+    if (scrim)     scrim.addEventListener('click', function () { closeDrawer(); });
+    // ドロワー内のリンクで遷移したら閉じる（フォーカスは遷移先へ自然に移るので復帰しない）
+    if (drawer) drawer.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href]');
+      if (a) closeDrawer(false);
+    });
+    // キーボード: Esc で閉じる / Tab でフォーカストラップ
+    document.addEventListener('keydown', function (e) {
+      if (!drawerOpen) return;
+      if (e.key === 'Escape') { e.preventDefault(); closeDrawer(); return; }
+      if (e.key === 'Tab') {
+        var f = focusables();
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+
+    // ルートに応じて body.is-lesson を切替（CSS がサイドバー非表示／☰表示を出し分ける）。
+    // レッスンページ以外では必ずドロワーを閉じ状態にする（closeDrawer は冪等＝残留状態も掃除）。
+    function syncLessonMode() {
+      var lesson = isLessonRoute();
+      document.body.classList.toggle('is-lesson', lesson);
+      if (!lesson) closeDrawer(false);
+    }
+
     try { fillLogoMark(); } catch (e) {}
     try { fillIcons(); } catch (e) {}
     try { updateNavCurrent(); } catch (e) {}
-    window.addEventListener('hashchange', function () { try { updateNavCurrent(); } catch (e) {} });
+    try { syncLessonMode(); } catch (e) {}
+    window.addEventListener('hashchange', function () {
+      try { updateNavCurrent(); } catch (e) {}
+      try { syncLessonMode(); } catch (e) {}
+    });
   })();
 </script>
 </body>

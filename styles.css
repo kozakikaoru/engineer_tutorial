@@ -275,43 +275,33 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
 .sidebar__divider { border: none; border-top: 1px solid var(--c-border);
   margin: var(--space-5) var(--space-2); }
 
-/* 学習の連続記録カード（炎＋小ラベル＋大きな日数）。淡ピンク地のソフトカード。 */
-.streak {
-  display: flex; align-items: center; gap: var(--space-3);
-  margin: 0 var(--space-1);
-  padding: var(--space-3) var(--space-4);
-  background: linear-gradient(150deg, #FFFFFF 0%, #FFF1F7 100%);
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm), var(--inner-hi);
+/* 最下部：巨大積乱雲(cumulonimbus)の“上側の一部”だけが覗く装飾（PCのみ）。
+   仕組み: 枠は margin-top:auto で最下部へ。雲SVGはサイドバー幅より大きく描き、
+   下端を枠の外（負の bottom）まで伸ばす → 上半分の稜線だけ見えて、残りは
+   .sidebar__inner{overflow:hidden} と sidebar 自身でクリップ＝“続きは隠れて大きさを想像”。
+   2枚を前後にずらして重ね、奥(lav)＋手前(pink)で厚みを出す。 */
+.sidebar__cumulo {
+  position: relative; margin-top: auto;
+  height: 120px;                 /* 見える“窓”の高さ。これ以下しか覗かせない */
+  margin-left: calc(var(--space-4) * -1);   /* サイドバー左パディングを相殺して端まで */
+  margin-right: calc(var(--space-4) * -1);
 }
-.streak__icon {
-  width: 38px; height: 38px; border-radius: 12px; flex: none;
-  display: grid; place-items: center;
-  background: linear-gradient(150deg, #FBD0E4 0%, #F7B6D3 100%);
-  color: var(--c-brand-deep);
-  box-shadow: var(--inner-hi);
+.sidebar__cumulo-img {
+  position: absolute; left: 50%; bottom: -150px;   /* 下端を窓の外へ＝上側だけ見せる */
+  width: 300px; transform: translateX(-50%);
+  animation: float-cloud 16s var(--ease) infinite;
 }
-.streak__icon svg { width: 21px; height: 21px; }
-.streak__body { min-width: 0; }
-.streak__label { font-size: var(--fs-xs); color: var(--c-text-muted); font-weight: 700; }
-.streak__value { font-size: 20px; font-weight: 800; color: var(--c-brand-strong); line-height: 1.2;
-  font-variant-numeric: tabular-nums; }
-.streak__unit { font-size: var(--fs-sm); }
-
-/* 最下部のやわらかい雲イラスト（ピンク＋ラベンダーの重なり雲・装飾・PCのみ）。
-   margin-top:auto で最下部へ押し下げ、はみ出しは .sidebar__inner の overflow:hidden で切る。
-   メニュー/streak には絶対に被らない（上の要素とは別フローで最下部に置かれる）。 */
-.sidebar__cloud { position: relative; margin-top: auto; height: 104px; }
-.sidebar__cloud-img { position: absolute; bottom: -14px; width: 100%; color: #FCE3EF;
-  animation: float-cloud 14s var(--ease) infinite; }
-.sidebar__cloud-img svg { width: 100%; height: auto; }
-.sidebar__cloud-img--lav { bottom: 6px; left: -10px; width: 64%; color: #EFE7FB;
-  animation-delay: -6s; }
-.sidebar__cloud-img--pink { bottom: -18px; right: -12px; left: auto; width: 78%; color: #FCE3EF; }
-.sidebar__cloud-spark { position: absolute; bottom: 60px; left: 46%; width: 16px; height: 16px;
-  color: #F58EC0; animation: twinkle 3.2s var(--ease) infinite; }
-.sidebar__cloud-spark svg { width: 100%; height: 100%; }
+.sidebar__cumulo-img svg { width: 100%; height: auto; display: block; }
+/* 奥の雲（ラベンダー）：少し上・左にずらし、淡く大きく */
+.sidebar__cumulo-img--back  { width: 330px; bottom: -140px; margin-left: -26px;
+  color: #ECE3FB; opacity: .85; animation-delay: -7s; }
+/* 手前の雲（ピンク）：基準位置・しっかりした淡ピンク */
+.sidebar__cumulo-img--front { color: #FBDCEC; }
+.sidebar__cumulo-spark {
+  position: absolute; left: 52%; bottom: 78px; width: 16px; height: 16px;
+  color: #F58EC0; animation: twinkle 3.2s var(--ease) infinite;
+}
+.sidebar__cumulo-spark svg { width: 100%; height: 100%; }
 
 .appfoot {
   position: relative; z-index: 1;
@@ -320,6 +310,90 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
 }
 .appfoot svg { width: 15px; height: 15px; vertical-align: -3px; }
 .appfoot a { color: var(--c-text-muted); }
+
+/* =========================================================================
+   レッスンページのハンバーガー＋ドロワー（YouTube風 / a11y）
+   - 既定（ホーム/章一覧/復習リスト）: ハンバーガー/暗幕/ドロワーは出さない＝サイドバー常時表示。
+   - body.is-lesson（#/page/...）: グローバルサイドバーを隠し、左上に ☰ を固定。
+     ☰ → 左からドロワー＋暗幕。Esc/外側/×/再クリックで閉じる（JS）。
+   ========================================================================= */
+/* 既定は全部非表示。is-lesson のときだけ出す。 */
+.nav-toggle { display: none; }
+.nav-scrim  { display: none; }
+
+/* --- レッスンモード: サイドバーを隠して1カラムに、☰ を出す --- */
+body.is-lesson .sidebar { display: none; }
+body.is-lesson .app-shell { grid-template-columns: minmax(0, 1fr); }
+/* ☰ は左上に固定。本文先頭（戻る/パンくず）が ☰ に被らないよう、上端の行だけ左に余白を空ける。 */
+body.is-lesson .back-home { margin-left: 58px; }
+body.is-lesson .view--page > .breadcrumb { padding-left: 58px; }
+
+/* ハンバーガーボタン（白い丸角ボタン・固定）。 */
+body.is-lesson .nav-toggle {
+  display: inline-grid; place-items: center;
+  position: fixed; top: var(--space-4); left: var(--space-4); z-index: 60;
+  width: 46px; height: 46px; border-radius: 14px;
+  background: var(--c-surface); color: var(--c-brand-strong);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--shadow-md), var(--inner-hi);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+body.is-lesson .nav-toggle:hover { background: var(--c-brand-soft); transform: translateY(-1px); }
+.nav-toggle__icon { width: 24px; height: 24px; display: grid; place-items: center; }
+.nav-toggle__icon svg { width: 24px; height: 24px; }
+
+/* 暗幕（ドロワーの外側）。fade in/out。hidden 属性で完全に外す。 */
+.nav-scrim {
+  position: fixed; inset: 0; z-index: 70;
+  background: rgba(58,28,44,.46);
+  opacity: 0; transition: opacity var(--dur) var(--ease);
+}
+.nav-scrim:not([hidden]) { display: block; }
+.nav-scrim.is-open { opacity: 1; }
+
+/* ドロワー（左からスライド）。閉=画面外へ。開=0。 */
+.nav-drawer {
+  position: fixed; top: 0; left: 0; z-index: 80;
+  width: 280px; max-width: 86vw; height: 100%;
+  background: var(--c-surface);
+  border-right: 1px solid var(--c-border);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-5) var(--space-4) var(--space-6);
+  display: flex; flex-direction: column; gap: var(--space-4);
+  transform: translateX(-100%);
+  transition: transform var(--dur) var(--ease), visibility 0s linear var(--dur);
+  visibility: hidden;
+}
+/* 開閉は aria-hidden を“正”にする（is-open クラスと取り合いになって desync しないように）。
+   aria-hidden="false" のときだけスライドイン＋可視化。閉のときは必ず画面外＋不可視。 */
+.nav-drawer[aria-hidden="false"] { transform: translateX(0); visibility: visible;
+  transition: transform var(--dur) var(--ease), visibility 0s; }
+.nav-drawer__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  margin-bottom: var(--space-2); }
+.nav-drawer__logo { margin: 0; }
+.nav-drawer__close {
+  width: 38px; height: 38px; border-radius: 11px; flex: none; border: 1px solid var(--c-border);
+  background: #fff; color: var(--c-text-muted); display: grid; place-items: center;
+  box-shadow: var(--shadow-sm);
+}
+.nav-drawer__close:hover { background: var(--c-brand-soft); color: var(--c-brand-strong); }
+.nav-drawer__close svg { width: 18px; height: 18px; }
+/* ドロワー内メニューは常に「縦並び＋ラベル表示」。
+   .sidenav を流用しているため、Responsive の畳み（横並び／ラベル非表示）が降りてこないよう
+   ここで descendant 具体度（2クラス）で明示的に固定する（メディアクエリの単一クラスより強い）。 */
+.nav-drawer .nav-drawer__nav { gap: var(--space-1); flex-direction: column; align-items: stretch; }
+.nav-drawer .nav-drawer__nav .sidenav__item { flex-direction: row; padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius-md); width: 100%; }
+.nav-drawer .nav-drawer__nav .sidenav__label { display: block; }
+
+/* レッスンページ上部の「← ホームに戻る」リンク（パンくずの上）。 */
+.back-home {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: var(--fs-sm); font-weight: 800; color: var(--c-brand-strong);
+  margin-bottom: var(--space-3);
+}
+.back-home svg { width: 16px; height: 16px; }
+.back-home:hover { text-decoration: underline; }
 
 /* =========================================================================
    メイン上部バー（おかえり！ ＋ 進捗カード ＋ 丸アバター）
@@ -411,6 +485,16 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
   box-shadow: none; cursor: not-allowed; transform: none; border-color: transparent;
 }
 .btn--sm { min-height: 38px; padding: var(--space-2) var(--space-4); font-size: var(--fs-sm); }
+/* ピンクの塗りpill（カテゴリカードの「はじめる →」CTA）。--primary と同系のソリッド。 */
+.btn--pill { background: var(--grad-brand); color: #fff; box-shadow: var(--shadow-pink), var(--inner-hi-strong); }
+.btn--pill:hover { transform: translateY(-2px); box-shadow: 0 18px 36px rgba(214,76,140,.36), var(--inner-hi-strong); text-decoration: none; }
+.btn--pill:active { transform: translateY(0); box-shadow: var(--shadow-sm); }
+/* 非活性表示（準備中カードの「近日公開」など。<a> ではなく <span> に付ける）。 */
+.btn.is-disabled, .btn[aria-disabled="true"] {
+  background: var(--c-surface-2); color: var(--c-text-faint);
+  box-shadow: none; cursor: not-allowed; transform: none; border-color: transparent;
+}
+.btn.is-disabled:hover, .btn[aria-disabled="true"]:hover { transform: none; box-shadow: none; }
 
 /* =========================================================================
    Badges / pills
@@ -586,35 +670,104 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
    章テストは学習ページの章ナビ「章テストを受ける」から受けられる（機能は維持）。 */
 
 /* =========================================================================
-   コース選択グリッド（小カード：続き/準備中）
+   ホーム = カテゴリ選択（画像1）
+   見出し「何から学びますか？」＋サブ → カテゴリ（講座）カードのグリッド。
    ========================================================================= */
-.course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-5); }
-.mini-card {
+.home-head { margin-bottom: var(--space-6); }
+.home-head__title {
+  font-size: var(--fs-display); font-weight: 800; color: #4A1E38; letter-spacing: -.02em;
+  display: inline-flex; align-items: center; gap: var(--space-3);
+}
+.home-head__title .spark { color: #F58EC0; width: 28px; height: 28px; }
+.home-head__sub { color: var(--c-text-muted); margin-top: var(--space-2); font-size: var(--fs-h3); max-width: 60ch; }
+
+/* カテゴリカードのグリッド: 3列 → 2列 → 1列（下部 Responsive で段階化）。 */
+.cat-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+/* カテゴリ（講座）カード ＝ 付箋／フォルダ風。右上に折れ角(dog-ear)、ふんわり影、大角丸。 */
+.cat-card {
   position: relative; overflow: hidden;
-  background: var(--grad-card); border: 1px solid var(--c-border);
-  border-radius: var(--radius-xl); padding: var(--space-5);
+  display: flex; flex-direction: column; gap: var(--space-4);
+  min-width: 0;
+  background: var(--grad-card);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-5) var(--space-5) var(--space-5);
   box-shadow: var(--shadow-md), var(--inner-hi);
-  display: flex; flex-direction: column; gap: var(--space-3);
   transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
-.mini-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg), var(--inner-hi); }
-.mini-card__logo {
-  width: 56px; height: 56px; border-radius: 17px; flex: none;
-  background: var(--grad-brand); color: #fff; display: grid; place-items: center;
-  box-shadow: var(--shadow-pink), var(--inner-hi-strong);
-}
-.mini-card__logo svg { width: 30px; height: 30px; }
-.mini-card__title { font-size: var(--fs-h2); }
-.mini-card__desc { font-size: var(--fs-sm); color: var(--c-text-muted); flex: 1; }
-.mini-card__foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-2); }
-.mini-card--soon { background: var(--c-surface-2); box-shadow: var(--shadow-sm); }
-.mini-card--soon .mini-card__logo { background: #E3D3DD; color: #fff; box-shadow: var(--inner-hi); }
-.mini-card--soon .mini-card__title { color: var(--c-text-muted); }
+.cat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg), var(--inner-hi); }
 
-/* セクション見出し（「ほかの教材」など。脇に小 sparkle） */
-.section-title { font-size: var(--fs-h2); margin: var(--space-6) 0 var(--space-4);
-  display: flex; align-items: center; gap: 8px; }
-.section-title .spark { width: 18px; height: 18px; color: #F58EC0; }
+/* 右上の折れ角（page-curl）。三角の“めくれ”＋淡い影で付箋感。装飾。 */
+.cat-card__dogear {
+  position: absolute; top: 0; right: 0; width: 38px; height: 38px;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FDEAF3 48%, #F6CFE0 50%, #F2BFD6 100%);
+  border-bottom-left-radius: 12px;
+  box-shadow: -2px 2px 5px rgba(120,40,80,.12);
+  border-left: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border);
+}
+/* 右上の小 sparkle（折れ角の脇。白〜ピンクの装飾） */
+.cat-card__spark { position: absolute; top: 12px; right: 46px; width: 15px; height: 15px; color: #F49ECB; }
+/* 小さなドット装飾（左下） */
+.cat-card__dot { position: absolute; left: 16px; bottom: 16px; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--c-border-strong); opacity: .8; }
+
+.cat-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+
+/* ロゴタイル＝マスキングテープで貼った付箋風（色付き小タイル＋上部テープ＋わずかな傾き）。 */
+.cat-card__tile {
+  position: relative; flex: none;
+  width: 64px; height: 64px; border-radius: 16px;
+  display: grid; place-items: center;
+  transform: rotate(-4deg);
+  box-shadow: var(--shadow-md), var(--inner-hi);
+}
+.cat-card__tile svg { width: 34px; height: 34px; }
+/* マスキングテープ（タイル上辺に斜めに貼った半透明の帯）。装飾。 */
+.cat-card__tape {
+  position: absolute; top: -9px; left: 50%; width: 46px; height: 17px;
+  transform: translateX(-50%) rotate(5deg);
+  background: rgba(255,255,255,.62);
+  border: 1px solid rgba(255,255,255,.7);
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(120,40,80,.12);
+}
+/* テーマ別のタイル地＋ロゴ色（画像1: ターミナル=ピンク / Git=淡ピンク / Python=イエロー）。
+   ロゴ文字色は各タイル地で AA を満たす濃インクにする（白ロゴは淡地で不可）。 */
+.cat-card--pink   .cat-card__tile { background: linear-gradient(150deg, #FBB6D6 0%, #F58EC0 100%); color: #701742; }
+.cat-card--rose   .cat-card__tile { background: linear-gradient(150deg, #FCD3E5 0%, #F8B6D3 100%); color: #8A2059; }
+.cat-card--yellow .cat-card__tile { background: linear-gradient(150deg, #FBE08C 0%, #F6C75A 100%); color: #6E4500; }
+
+/* カテゴリ名（太字）＋直下にピンクの点線アンダーライン。 */
+.cat-card__body { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+.cat-card__title {
+  display: inline-block; align-self: flex-start;
+  font-size: var(--fs-h1); font-weight: 800; color: #4A1E38; letter-spacing: -.01em;
+  padding-bottom: 5px;
+  border-bottom: 3px dotted var(--c-brand);
+}
+a.cat-card__title-link { color: #4A1E38; }
+a.cat-card__title-link:hover { color: var(--c-brand-strong); text-decoration: none; }
+.cat-card__desc { font-size: var(--fs-sm); color: var(--c-text-muted); line-height: 1.7; }
+
+/* 進捗ブロック（バー＋「N コマンド」）。 */
+.cat-card__progress { display: flex; align-items: center; gap: var(--space-3); }
+.cat-card__progress .progress__track { flex: 1; }
+.cat-card__count { font-size: var(--fs-xs); color: var(--c-text-muted); font-weight: 800;
+  white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* ボタン行（はじめる前に / はじめる→）。 */
+.cat-card__actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-top: auto; }
+.cat-card__actions .btn { flex: 1 1 auto; }
+
+/* 準備中カード（Python）＝淡色・非活性。 */
+.cat-card--soon { background: var(--c-surface-2); box-shadow: var(--shadow-sm); }
+.cat-card--soon .cat-card__title { color: var(--c-text-muted); border-bottom-color: var(--c-border-strong); }
+.cat-card--soon .cat-card__tile { filter: saturate(.7); opacity: .9; }
+.cat-card__soon { align-self: flex-start; }
 
 /* =========================================================================
    Breadcrumb
@@ -799,8 +952,8 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
    Responsive
    ========================================================================= */
 @media (max-width: 960px) {
-  /* サイドバーを上部のコンパクトバー（ドロワー）に畳む。フルハイトのレールを解除し、
-     1行のヘッダーに：ロゴ＋メニュー横並び。下部の雲・streak・区切り線は畳んだ状態では隠す。 */
+  /* サイドバーを上部のコンパクトバーに畳む。フルハイトのレールを解除し、
+     1行のヘッダーに：ロゴ＋メニュー横並び。下部の積乱雲は畳んだ状態では隠す。 */
   .app-shell { grid-template-columns: minmax(0, 1fr); min-height: 0; }
   .sidebar { border-right: none; border-bottom: 1px solid var(--c-border); box-shadow: var(--shadow-sm); }
   .sidebar__inner { position: static; height: auto; overflow: visible;
@@ -809,8 +962,15 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
   .sidebar__logo { margin: 0 auto 0 var(--space-1); }
   .sidenav { flex-direction: row; align-items: center; gap: var(--space-1); flex-wrap: nowrap; }
   .sidenav__item { padding: var(--space-2) var(--space-3); border-radius: var(--radius-pill); }
-  .sidebar__divider, .streak, .sidebar__cloud { display: none; }  /* 畳んだバーには出さない */
+  .sidebar__cumulo { display: none; }  /* 畳んだバーには出さない */
   .app-shell > .page-wrap { padding: var(--space-5) var(--space-5) var(--space-7); }
+
+  /* カテゴリカード: 3列 → 2列 */
+  .cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  /* レッスンモード（モバイル）: サイドバー(上部バー)は隠したまま、☰ は固定で出す。
+     本文上部に☰の高さぶん余白を確保し、ボタンと見出しが重ならないようにする。 */
+  body.is-lesson .app-shell > .page-wrap { padding-top: 74px; }
 
   .learn { grid-template-columns: minmax(0, 1fr); }
   .chapter-nav { display: none; }
@@ -834,7 +994,8 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
   .sidenav__count { position: relative; }
   .app-shell > .page-wrap { padding: var(--space-5) var(--space-4) var(--space-6); }
   .content-card, .quiz { padding: var(--space-5); }
-  .course-grid { grid-template-columns: 1fr; }
+  /* カテゴリカード: 2列 → 1列（375px で横溢れ0） */
+  .cat-grid { grid-template-columns: 1fr; }
   .course-hero { padding: var(--space-5); }
   .page-foot { flex-direction: column-reverse; align-items: stretch; }
   .page-foot .btn, .page-foot .read-toggle { width: 100%; }
@@ -844,6 +1005,8 @@ a.sidenav__item:hover { background: var(--c-brand-soft); color: var(--c-brand-st
   .progress-pill { flex: 1; min-width: 0; }
   .chapter-card { flex-wrap: wrap; }
   .chapter-card__side { width: 100%; justify-content: space-between; }
+  /* 狭い画面ではカテゴリのボタンを縦積みにして押しやすく（横溢れ防止） */
+  .cat-card__actions { flex-direction: column; align-items: stretch; }
   :root { --fs-display: 28px; --fs-h1: 21px; --fs-h2: 17px; }
 }
 @media (prefers-reduced-motion: reduce) {
