@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="エンジニア1年生向け。git とターミナルの基本コマンドを、1ページ1コマンドの小さなステップでやさしく学べる学習サイトです。">
 <title>TermLearn — git &amp; ターミナル 学習チュートリアル</title>
-<link rel="stylesheet" href="styles.css?v=20260626f">
+<link rel="stylesheet" href="styles.css?v=20260626g">
 </head>
 <body>
 
@@ -41,10 +41,13 @@
        - 再クリック/外側クリック/Esc で閉じる。aria-expanded・フォーカストラップ対応（bootstrap JS）。
        - ドロワー本体はサイドバーと同じ「ホーム/復習リスト」を持つ（グローバルメニュー）。
        =========================================================================== -->
-  <button id="navToggle" class="nav-toggle" type="button"
-          aria-label="メニューを開く" aria-expanded="false" aria-controls="navDrawer" aria-haspopup="menu">
-    <span class="nav-toggle__icon" aria-hidden="true" data-icon="menu"></span>
-  </button>
+  <div class="lesson-bar">
+    <button id="navToggle" class="nav-toggle" type="button"
+            aria-label="メニューを開く" aria-expanded="false" aria-controls="navDrawer" aria-haspopup="menu">
+      <span class="nav-toggle__icon" aria-hidden="true" data-icon="menu"></span>
+    </button>
+    <a class="lesson-bar__brand" href="#/" aria-label="TermLearn ホームへ">TermLearn</a>
+  </div>
 
   <!-- 暗幕（ドロワーの外側）。クリックで閉じる。 -->
   <div id="navScrim" class="nav-scrim" hidden></div>
@@ -128,17 +131,17 @@
     → file:// で開いたときに CORS で読めなくなるため。
   各ファイルは window に登録して連携する。
 -->
-<script src="js/glossary.js?v=20260626f"></script>
-<script src="js/store.js?v=20260626f"></script>
-<script src="js/icons.js?v=20260626f"></script>
-<script src="js/render.js?v=20260626f"></script>
+<script src="js/glossary.js?v=20260626g"></script>
+<script src="js/store.js?v=20260626g"></script>
+<script src="js/icons.js?v=20260626g"></script>
+<script src="js/render.js?v=20260626g"></script>
 <!-- コンテンツ（教材を増やすときはここに1行追加するだけ） -->
 <script>window.COURSES = window.COURSES || [];</script>
-<script src="content/terminal.js?v=20260626f"></script>
-<script src="content/git.js?v=20260626f"></script>
-<script src="content/coming-soon.js?v=20260626f"></script>
+<script src="content/terminal.js?v=20260626g"></script>
+<script src="content/git.js?v=20260626g"></script>
+<script src="content/coming-soon.js?v=20260626g"></script>
 <!-- ルーター（最後。COURSES が出そろってから起動） -->
-<script src="js/router.js?v=20260626f"></script>
+<script src="js/router.js?v=20260626g"></script>
 
 <!-- サイドバー/ドロワー/フッター/背景装飾の SVG・nav 現在地・レッスンモード・ハンバーガーは、
      icons.js / store.js が出そろってから整える。

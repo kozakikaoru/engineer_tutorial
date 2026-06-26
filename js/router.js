@@ -350,23 +350,46 @@
   /* =======================================================================
      ③ 学習ページ
      ======================================================================= */
-  function chapterNavList(course, chapter, currentPageId) {
-    var items = chapter.pages.map(function (pg) {
+  // レッスンのロードマップ（番号ノードを点線で縦に連結。完了=塗り＋check / 現在=塗り＋番号 / 未完=白丸＋番号）。
+  function lessonRoadmap(course, chapter, currentPageId) {
+    var items = chapter.pages.map(function (pg, i) {
       var read = Store.isRead(course.id, chapter.id, pg.id);
       var current = pg.id === currentPageId;
-      var cls = 'chapter-nav__link' + (current ? ' is-current' : '');
+      var nodeMod = read ? ' lesson-road__node--done' : (current ? ' lesson-road__node--current' : ' lesson-road__node--todo');
+      var node = '<span class="lesson-road__node' + nodeMod + '" aria-hidden="true">' +
+        (read ? Icon('check') : chapterNo(i)) + '</span>';
       var aria = current ? ' aria-current="page"' : '';
       var href = '#/page/' + course.id + '/' + chapter.id + '/' + pg.id;
-      return '<li><a class="' + cls + '" href="' + href + '"' + aria + '>' +
-        R.checkMark(read) + ' ' + R.esc(pg.navTitle || pg.title) + '</a></li>';
+      return '<li class="lesson-road__item' + (current ? ' is-current' : '') + (read ? ' is-done' : '') + '">' +
+        node +
+        '<a class="lesson-road__link" href="' + href + '"' + aria + '>' + R.esc(pg.navTitle || pg.title) + '</a>' +
+      '</li>';
     }).join('');
+    return '<ol class="lesson-road">' + items + '</ol>';
+  }
 
-    var quizItem = '';
-    if (chapter.quiz && chapter.quiz.length) {
-      quizItem = '<a class="chapter-nav__link chapter-nav__quiz" href="#/quiz/' + course.id + '/' + chapter.id + '">' +
-        Icon('doc') + ' 章テストを受ける</a>';
-    }
-    return '<ul class="chapter-nav__list">' + items + '</ul>' + quizItem;
+  // 章テストカード（ロードマップ下のボタン風カード）。クイズが無ければ空。
+  function chapterTestCard(course, chapter) {
+    if (!(chapter.quiz && chapter.quiz.length)) return '';
+    return '<a class="chapter-test" href="#/quiz/' + course.id + '/' + chapter.id + '">' +
+      '<span class="chapter-test__icon" aria-hidden="true">' + Icon('doc') + '</span>' +
+      '<span>章テストを受ける</span>' +
+      Icon('spark', { class: 'chapter-test__spark' }) +
+    '</a>';
+  }
+
+  // 章ヘッダーカード（フォルダ番号バッジ＋第N章タイトル＋Mレッスン＋chevron）。クリックで章一覧へ戻る。
+  function chapterHead(course, chapter, chapterNum) {
+    var idx = chapterNum - 1;
+    return '<a class="chapter-head" href="#/course/' + course.id + '" aria-label="' + R.esc(course.title) + ' の章一覧へ">' +
+      '<span class="num-badge chapter-head__badge" data-cycle="' + badgeCycle(idx) + '" aria-hidden="true">' + chapterNo(idx) +
+        Icon('spark', { class: 'num-badge__spark' }) + '<span class="num-badge__dot"></span></span>' +
+      '<span class="chapter-head__text">' +
+        '<span class="chapter-head__title">第' + chapterNum + '章 ' + R.esc(chapter.title) + '</span>' +
+        '<span class="chapter-head__count">' + chapter.pages.length + 'レッスン</span>' +
+      '</span>' +
+      '<span class="chapter-head__chev" aria-hidden="true">' + Icon('chevron-down') + '</span>' +
+    '</a>';
   }
 
   function viewPage(courseId, chapterId, pageId) {
@@ -427,41 +450,42 @@
         R.checkMark(read) + '<span class="read-toggle__label">' + (read ? '読んだ' : '読んだことにする') + '</span>' +
       '</button>';
 
-    var navList = chapterNavList(course, chapter, page.id);
+    var roadmap = lessonRoadmap(course, chapter, page.id);
+    var testCard = chapterTestCard(course, chapter);
 
     setHTML(
       sectionOpen('view--page') +
-        // レッスンページ上部の「← ホームに戻る」（画像2）。グローバルメニューはハンバーガーに最小化されるため、
-        // 本文側にホームへの明確な戻り口を置く（パンくずとは別に、最短のホーム導線）。
-        '<a class="back-home" href="#/">' + Icon('arrow-left') + ' ホームに戻る</a>' +
-        breadcrumb([
-          { label: course.title, href: '#/course/' + course.id, icon: course.icon },
-          { label: '章' + chapterNum + ' ' + chapter.title, href: '#/page/' + course.id + '/' + chapter.id + '/' + chapter.pages[0].id },
-          { label: page.navTitle || page.title }
-        ]) +
-
-        // モバイル用 章ナビ（折りたたみ）
+        // モバイル用 章ナビ（折りたたみ）。中身はロードマップ＋章テストカード。
         '<details class="chapter-nav__mobile">' +
-          '<summary>' + Icon('list') + ' 章' + chapterNum + ' のレッスン一覧（' + prog.done + '/' + prog.total + ' 読了）</summary>' +
-          navList +
+          '<summary>' + Icon('list') + ' 第' + chapterNum + '章 のレッスン一覧（' + prog.done + '/' + prog.total + ' 読了）</summary>' +
+          roadmap + testCard +
         '</details>' +
 
         '<div class="learn">' +
-          // 左パネル＝章の内訳（レッスン一覧＋章テストを受ける）。
-          '<nav class="chapter-nav" aria-label="章' + chapterNum + ' のレッスン一覧">' +
-            '<div class="chapter-nav__title">章' + chapterNum + ' ' + R.esc(chapter.title) + '</div>' +
-            navList +
+          // 左パネル＝章の内訳（章ヘッダーカード＋レッスンのロードマップ＋章テストカード）。
+          '<nav class="chapter-nav" aria-label="第' + chapterNum + '章 のレッスン一覧">' +
+            chapterHead(course, chapter, chapterNum) +
+            roadmap +
+            testCard +
           '</nav>' +
 
-          '<article class="content-card prose">' +
-            '<h1>' + R.inline(page.title) + '</h1>' +
-            R.blocks(page.blocks) +
-            '<div class="page-foot">' +
-              prevBtn +
-              readBtn +
-              nextBtn +
-            '</div>' +
-          '</article>' +
+          // 右カラム＝パンくず（サイドバーより右）＋本文。「ホームに戻る」は左上のサイト名へ集約したので置かない。
+          '<div class="learn__main">' +
+            breadcrumb([
+              { label: course.title, href: '#/course/' + course.id, icon: course.icon },
+              { label: '第' + chapterNum + '章 ' + chapter.title, href: '#/page/' + course.id + '/' + chapter.id + '/' + chapter.pages[0].id },
+              { label: page.navTitle || page.title }
+            ]) +
+            '<article class="content-card prose">' +
+              '<h1>' + R.inline(page.title) + '</h1>' +
+              R.blocks(page.blocks) +
+              '<div class="page-foot">' +
+                prevBtn +
+                readBtn +
+                nextBtn +
+              '</div>' +
+            '</article>' +
+          '</div>' +
         '</div>' +
       '</section>'
     );
