@@ -218,11 +218,23 @@
   function categoryCard(course) {
     var theme = courseTheme(course);
     var titleId = 'cat-title-' + course.id;
-    var soon = !!course.comingSoon;
 
-    // 進捗（総ページ数 = 講座の全コマンド数）。準備中は 0/0。
-    var prog = soon ? { done: 0, total: 0 } : Store.courseProgress(course);
+    // 準備中（未定）の教材＝アイコン・説明・進捗・ボタンなしの最小カード。「準備中」だけを中央に。
+    if (course.comingSoon) {
+      return '' +
+        '<article class="cat-card cat-card--' + theme + ' cat-card--soon" data-theme="' + theme + '" aria-labelledby="' + titleId + '">' +
+          '<span class="cat-card__dogear" aria-hidden="true"></span>' +
+          '<div class="cat-card__soon-inner">' +
+            '<span id="' + titleId + '" class="cat-card__title">' + R.esc(course.title) + '</span>' +
+            '<span class="badge badge--todo cat-card__soon">準備中</span>' +
+          '</div>' +
+        '</article>';
+    }
+
+    // 公開教材
+    var prog = Store.courseProgress(course);
     var pctNow = R.pct(prog.done, prog.total);
+    var courseHref = '#/course/' + course.id;
 
     // ロゴタイル（マスキングテープ付き付箋）。中に公式ロゴ。装飾は aria-hidden。
     var tile =
@@ -231,44 +243,27 @@
         Icon(course.icon, { size: 34 }) +
       '</span>';
 
-    // 進捗ブロック（バー＋「N コマンド」表記）。準備中も枠は出すが 0 件。
     var progressBlock =
       '<div class="cat-card__progress">' +
         '<div class="progress__track"><div class="progress__fill" style="width:' + pctNow + '%"></div></div>' +
         '<span class="cat-card__count">' + prog.done + '/' + prog.total + ' コマンド</span>' +
       '</div>';
 
-    // ボタン行。準備中は lock＋「準備中」＋「近日公開」（リンクにしない＝非活性）。
-    var courseHref = '#/course/' + course.id;
-    var actions;
-    if (soon) {
-      actions =
-        '<div class="cat-card__actions">' +
-          '<span class="btn btn--ghost btn--sm" aria-disabled="true">' + Icon('lock') + ' 準備中</span>' +
-          '<span class="btn btn--pill btn--sm is-disabled" aria-disabled="true">近日公開</span>' +
-        '</div>';
-    } else {
-      actions =
-        '<div class="cat-card__actions">' +
-          '<a class="btn btn--ghost btn--sm" href="' + courseHref + '">' + Icon('book') + ' はじめる前に</a>' +
-          '<a class="btn btn--pill btn--sm cat-card__cta" href="' + courseHref + '">はじめる ' + Icon('arrow-right') + '</a>' +
-        '</div>';
-    }
+    // ボタンは「はじめる →」のみ（「はじめる前に」は廃止）。
+    var actions =
+      '<div class="cat-card__actions">' +
+        '<a class="btn btn--pill btn--sm cat-card__cta" href="' + courseHref + '">はじめる ' + Icon('arrow-right') + '</a>' +
+      '</div>';
 
-    // カード本体。公開教材はカード見出し全体から章一覧へ飛べる小さなオーバーレイリンクを置く
-    //  （ボタンと干渉しないよう、リンクは見出しエリアのみ＝::after は使わず明示リンク）。
-    var titleLink = soon
-      ? '<span id="' + titleId + '" class="cat-card__title">' + R.esc(course.title) + '</span>'
-      : '<a id="' + titleId + '" class="cat-card__title cat-card__title-link" href="' + courseHref + '">' + R.esc(course.title) + '</a>';
+    var titleLink = '<a id="' + titleId + '" class="cat-card__title cat-card__title-link" href="' + courseHref + '">' + R.esc(course.title) + '</a>';
 
     return '' +
-      '<article class="cat-card cat-card--' + theme + (soon ? ' cat-card--soon' : '') + '" data-theme="' + theme + '" aria-labelledby="' + titleId + '">' +
+      '<article class="cat-card cat-card--' + theme + '" data-theme="' + theme + '" aria-labelledby="' + titleId + '">' +
         '<span class="cat-card__dogear" aria-hidden="true"></span>' +
         Icon('spark', { class: 'cat-card__spark' }) +
         '<span class="cat-card__dot" aria-hidden="true"></span>' +
         '<div class="cat-card__head">' +
           tile +
-          (soon ? '<span class="badge badge--todo cat-card__soon">準備中</span>' : '') +
         '</div>' +
         '<div class="cat-card__body">' +
           titleLink +
@@ -284,7 +279,7 @@
     // 絵文字は使わず sparkle（SVG・装飾）で。
     var head =
       '<div class="home-head">' +
-        '<h1 class="home-head__title">何から学びますか？' + Icon('spark', { class: 'spark spark--anim' }) + '</h1>' +
+        '<h1 class="home-head__title">何を学びますか？' + Icon('spark', { class: 'spark spark--anim' }) + '</h1>' +
         '<p class="home-head__sub">エンジニアの第一歩。気になるカテゴリを選んで、1コマンドずつ進めましょう。</p>' +
       '</div>';
 

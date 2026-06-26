@@ -771,11 +771,11 @@ a.cat-card__title-link:hover { color: var(--c-brand-strong); text-decoration: no
 .cat-card__actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-top: auto; }
 .cat-card__actions .btn { flex: 1 1 auto; }
 
-/* 準備中カード（Python）＝淡色・非活性。 */
-.cat-card--soon { background: var(--c-surface-2); box-shadow: var(--shadow-sm); }
-.cat-card--soon .cat-card__title { color: var(--c-text-muted); border-bottom-color: var(--c-border-strong); }
-.cat-card--soon .cat-card__tile { filter: saturate(.7); opacity: .9; }
-.cat-card__soon { align-self: flex-start; }
+/* 準備中カード（Python・未定）＝淡色・最小（アイコン等なし、「準備中」だけ）。中身は中央寄せ。 */
+.cat-card--soon { background: var(--c-surface-2); box-shadow: var(--shadow-sm); justify-content: center; }
+.cat-card--soon .cat-card__title { color: var(--c-text-muted); border-bottom-color: var(--c-border-strong); align-self: center; }
+.cat-card__soon-inner { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); text-align: center; }
+.cat-card__soon { align-self: center; }
 
 /* =========================================================================
    Breadcrumb
