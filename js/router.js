@@ -403,15 +403,10 @@
 
     // 前へ / 次へ（章をまたいで連続移動）
     var prevHref = null, nextHref = null;
+    // 章の途中なら「前へ」で同じ章の前ページへ。章の1ページ目（idx===0）は
+    // 「前へ」を出さない（前章へは飛ばさない）→ 下の prevBtn で「← 章一覧」になる。
     if (idx > 0) {
       prevHref = '#/page/' + course.id + '/' + chapter.id + '/' + chapter.pages[idx - 1].id;
-    } else {
-      // 前章の最後のページ
-      var ci = course.chapters.indexOf(chapter);
-      if (ci > 0) {
-        var pc = course.chapters[ci - 1];
-        prevHref = '#/page/' + course.id + '/' + pc.id + '/' + pc.pages[pc.pages.length - 1].id;
-      }
     }
     if (idx < chapter.pages.length - 1) {
       nextHref = '#/page/' + course.id + '/' + chapter.id + '/' + chapter.pages[idx + 1].id;
