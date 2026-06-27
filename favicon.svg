@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="TermLearn">
+  <defs>
+    <!-- ブランドのロゴタイルと同じグラデ（styles.css grad-brand 150deg #E96FAC→#C23B7C） -->
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E96FAC"/>
+      <stop offset="1" stop-color="#C23B7C"/>
+    </linearGradient>
+    <!-- 上面のやわらかいハイライト（“ぷっくり”感。小サイズでは無害） -->
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".5"/>
+      <stop offset=".45" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- 角丸スクエア（.logo__mark と同じ比率: 半径/辺 ≈ 0.32） -->
+  <rect x="3" y="3" width="58" height="58" rx="18" fill="url(#tile)"/>
+  <rect x="3" y="3" width="58" height="58" rx="18" fill="url(#sheen)"/>
+  <!-- ターミナル窓グリフ（白）。icons.js の Icon('terminal') を中央に拡大配置 -->
+  <g transform="translate(14 14) scale(1.5)" fill="#FFFFFF">
+    <path d="M3 4h18a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 2v12h18V6H3zm2.3 2.3 3.4 3.4-3.4 3.4L4 15.7l2.1-2-2.1-2 1.3-1.4zM11 14h5v1.5h-5V14z"/>
+  </g>
+</svg>
